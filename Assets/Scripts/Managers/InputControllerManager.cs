@@ -5,22 +5,18 @@ public class InputControllerManager : MonoBehaviour
     public static InputControllerManager Instance;
 
     const string slideTag = "Slide";
+
     public bool IsInputEnabled { get; set; } = true;
 
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
+    private void Awake() => Instance = Instance.SetSingleton(this);
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            ColorObjectsManager.Instance.Generate();
+        }
+
         if (IsInputEnabled && Input.GetMouseButtonDown(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);

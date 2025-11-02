@@ -22,15 +22,7 @@ public class UIManager : MonoBehaviour
         yield return null;
         allPanels.ForEach(p => p.Hide());
 
-        /*if (FireBaseManager.Instance.User != null)
-        {
-            ShowPanel<MainMenu>();
-            yield return FireBaseManager.Instance.LoadPlayerData();
-        }
-        else
-        {
-            ShowPanel<LoginSelectMenu>();
-        }*/
+        ShowPanel<Menu>();
     }
 
     public void RegisterPanel(UIPanel panel) => allPanels.Add(panel);

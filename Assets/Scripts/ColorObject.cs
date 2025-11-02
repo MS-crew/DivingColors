@@ -1,8 +1,10 @@
 using UnityEngine;
 
+using static Assets.PublicEnums;
+
 public class ColorObject : MonoBehaviour
 {
-    [field: SerializeField] public GameManager.ColorType ColorType { get; private set; }
+    [field: SerializeField] public ColorType ColorType { get; private set; }
 
     public int RowIndex { get; set; }
     public int ColumnIndex { get; set; }
