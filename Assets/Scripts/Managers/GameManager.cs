@@ -17,28 +17,32 @@ public class GameManager : MonoBehaviour
 
     private void OnEnable()
     {
-        EventManager.OnLevelFinished += GameEnded; 
+        EventManager.OnGameEnded += GameEnded; 
     }
 
     private void OnDisable()
     {
-        EventManager.OnLevelFinished -= GameEnded;
+        EventManager.OnGameEnded -= GameEnded;
     }
 
     private void GameEnded()
     {
-        Time.timeScale = 0;
+        Time.timeScale = 0; 
+        UIManager.Instance.ShowPanel<GameOver>();
         InputControllerManager.Instance.IsInputEnabled = false;
         Debug.Log("Game Ended");
-        
-        //UIManager.Instance.ShowPanel<GameOverMenu>();
     }
 
     public void StartLevel()
     {
+        ScoreManager.Instance.Score = 0;
         SceneManager.LoadScene(levelSceneName);
         UIManager.Instance.ShowPanel<InGame>();
-        //Timing.CallDelayed(5f, ColorObjectsManager.Instance.Generate);
+        Timing.CallDelayed(0.25f,()=> 
+        {
+            ColorObjectsManager.Instance?.Generate();
+        });
+        InputControllerManager.Instance.IsInputEnabled = true;
     }
 
     public void ReturnToMainMenu()

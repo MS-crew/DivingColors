@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
+using DG.Tweening;
+
 using UnityEngine;
 
 using static Assets.PublicEnums;
@@ -21,14 +23,103 @@ public class ColorObjectsManager : MonoBehaviour
 
     private void Awake() => Instance = Instance.SetSingleton(this);
 
-    private void OnEnable() => EventManager.OnSlideUsed += FillEmptys;
+    private void OnEnable() 
+    {
+        EventManager.OnSlideUsed += FillEmptys;
+    }  
 
-    private void OnDisable() => EventManager.OnSlideUsed -= FillEmptys;
+    private void OnDisable()
+    {
+        EventManager.OnSlideUsed -= FillEmptys;
+        ReturnToPoolAll();
+    } 
+
+  private void ReturnToPoolAll()
+    {
+        foreach (GameObject gameObject in ColorObjects)
+        {
+            if (gameObject == null)
+                continue;
+
+            gameObject.ReturnToPool();
+        }
+
+        ColorObjects = null;
+    }
 
     private void FillEmptys(Slide _)
     {
         int lastRowIndex = Rows - 1;
-        GenerateRow(lastRowIndex);
+        Dictionary<ColorType, int> colorCounts = new();
+        for (int col = 0; col < Cols; col++)
+        {
+            GameObject prevCube = ColorObjects[lastRowIndex - 1, col];
+            if (prevCube == null)
+                continue;
+
+            if (prevCube.TryGetComponent(out ColorObject prevColor))
+            {
+                if (!colorCounts.ContainsKey(prevColor.ColorType))
+                    colorCounts[prevColor.ColorType] = 0;
+
+                colorCounts[prevColor.ColorType]++;
+            }
+        }
+
+        Dictionary<ColorType, float> spawnChances = new();
+        foreach (Slide slide in Slides)
+        {
+            ColorType color = slide.Color;
+            int count = colorCounts.ContainsKey(color) ? colorCounts[color] : 0;
+
+            float weight = 1f;
+            if (count >= slide.MinObjectCount)
+                weight = 0.5f;
+            else if (count == slide.MinObjectCount - 1)
+                weight = 1.25f;
+            else if (count == 0)
+                weight = 1.0f;
+
+            spawnChances[color] = weight;
+        }
+
+        float totalWeight = 0f;
+        foreach (KeyValuePair<ColorType, float> kvp in spawnChances)
+            totalWeight += kvp.Value;
+
+        for (int col = 0; col < Cols; col++)
+        {
+            if (ColorObjects[lastRowIndex, col] != null)
+                continue;
+
+            float roll = Random.Range(0f, totalWeight);
+            float runningWeight = 0f;
+            ColorType chosenColor = Slides[0].Color;
+
+            foreach (KeyValuePair<ColorType, float> kvp in spawnChances)
+            {
+                runningWeight += kvp.Value;
+                if (roll <= runningWeight)
+                {
+                    chosenColor = kvp.Key;
+                    break;
+                }
+            }
+
+            GameObject prefab = cubePrefabs.Find(p => p.GetComponent<ColorObject>().ColorType == chosenColor);
+            GameObject cube = PoolManager.Instance.SpawnFromPool(prefab, FindPosition(lastRowIndex, col), Quaternion.identity);
+
+            ColorObjects[lastRowIndex, col] = cube;
+
+            if (cube.TryGetComponent(out ColorObject colorObject))
+            {
+                colorObject.RowIndex = lastRowIndex;
+                colorObject.ColumnIndex = col;
+            }
+
+            cube.transform.localScale = Vector3.zero;
+            cube.transform.DOScale(Vector3.one, 0.3f).SetEase(Ease.OutBack);
+        }
     }
 
     public void Generate()
@@ -169,7 +260,6 @@ public class ColorObjectsManager : MonoBehaviour
 
         Debug.Log($"Generated row {rowIndex} with adaptive weights.");
     }
-
 
     public Vector3 FindPosition(int row, int col) => StartPoint.position + new Vector3(col * xPadding, 0, row * zPadding);
 }

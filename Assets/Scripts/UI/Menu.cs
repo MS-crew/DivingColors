@@ -27,6 +27,6 @@ public class Menu : UIPanel
 
     private void OnClickedSettings() 
     {
-        //UIManager.Instance.NavigateTo<SettingsMenu>(UIManager.NavigationMode.Replace);
+        //UIManager.Instance.NavigateTo<Settings>(UIManager.NavigationMode.Replace);
     } 
 }

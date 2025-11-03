@@ -3,8 +3,8 @@
 public static class EventManager
 {
     #region Game Core Events
-    public static event Action OnLevelFinished;
-    public static void LevelFinished() => OnLevelFinished?.Invoke();
+    public static event Action OnGameEnded;
+    public static void GameEnded() => OnGameEnded?.Invoke();
 
 
     public static event Action<Slide> OnSlideUsed;

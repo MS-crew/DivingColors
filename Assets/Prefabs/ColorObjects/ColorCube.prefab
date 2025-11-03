@@ -149,6 +149,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <ColorType>k__BackingField: 7
+  <Collectsound>k__BackingField: {fileID: 8300000, guid: dc3056347fd2e3a448c27d8c947c39da, type: 3}
 --- !u!114 &2918177230102317269
 MonoBehaviour:
   m_ObjectHideFlags: 0

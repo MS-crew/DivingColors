@@ -98,7 +98,7 @@ public class Slide : MonoBehaviour
         InputControllerManager.Instance.IsInputEnabled = true;
 
         if (!HasAnyAvailableSlide(colorObjectsManager))
-            EventManager.LevelFinished();
+            EventManager.GameEnded();
     }
 
     private async Task CollectSelected(List<ColorObject> selectedObjects, ColorObjectsManager colorObjectsManager)
@@ -107,8 +107,9 @@ public class Slide : MonoBehaviour
         {
             await obj.transform.DOMove(slidePoint.position, slideDuration).AsyncWaitForCompletion();
             obj.GetComponent<Rigidbody>().AddForce(forceDirection * 40, ForceMode.Impulse);
-            ScoreManager.Instance.Score += 1;
 
+            ScoreManager.Instance.Score += 1;
+            SoundManager.Instance.PlayGlobalSound(obj.Collectsound);
             Timing.CallDelayed(3f, () => obj.gameObject.ReturnToPool());
 
             colorObjectsManager.ColorObjects[obj.RowIndex, obj.ColumnIndex] = null;
@@ -126,7 +127,12 @@ public class Slide : MonoBehaviour
                 objectWillMove.GetComponent<ColorObject>().RowIndex = row - 1;
 
                 Vector3 newPos = colorObjectsManager.FindPosition(row - 1, obj.ColumnIndex);
-                objectWillMove.transform.DOMove(newPos, 0.5f);
+
+                bool isLast = (row == colorObjectsManager.Rows - 1);
+                if (isLast)
+                    await objectWillMove.transform.DOMove(newPos, 0.5f).AsyncWaitForCompletion();
+                else
+                    objectWillMove.transform.DOMove(newPos, 0.5f);
             }
         }
     }
