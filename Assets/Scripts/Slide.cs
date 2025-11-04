@@ -95,10 +95,14 @@ public class Slide : MonoBehaviour
         await CollectSelected(selectedObjects, colorObjectsManager);
 
         EventManager.SlideUsed(this);
-        InputControllerManager.Instance.IsInputEnabled = true;
 
         if (!HasAnyAvailableSlide(colorObjectsManager))
-            EventManager.GameEnded();
+        {
+            Timing.CallDelayed(1.5f, ()=> EventManager.GameEnded());
+            return;
+        }
+
+        InputControllerManager.Instance.IsInputEnabled = true;
     }
 
     private async Task CollectSelected(List<ColorObject> selectedObjects, ColorObjectsManager colorObjectsManager)
@@ -114,6 +118,7 @@ public class Slide : MonoBehaviour
 
             colorObjectsManager.ColorObjects[obj.RowIndex, obj.ColumnIndex] = null;
 
+            Sequence mainSequance = DOTween.Sequence();
             for (int row = obj.RowIndex + 1; row < colorObjectsManager.Rows; row++)
             {
                 GameObject objectWillMove = colorObjectsManager.ColorObjects[row, obj.ColumnIndex];
@@ -128,12 +133,10 @@ public class Slide : MonoBehaviour
 
                 Vector3 newPos = colorObjectsManager.FindPosition(row - 1, obj.ColumnIndex);
 
-                bool isLast = (row == colorObjectsManager.Rows - 1);
-                if (isLast)
-                    await objectWillMove.transform.DOMove(newPos, 0.5f).AsyncWaitForCompletion();
-                else
-                    objectWillMove.transform.DOMove(newPos, 0.5f);
+                mainSequance.Join(objectWillMove.transform.DOMove(newPos, 0.5f));
             }
+
+            await mainSequance.AsyncWaitForCompletion();
         }
     }
 
