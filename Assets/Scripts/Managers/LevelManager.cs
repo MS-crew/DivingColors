@@ -3,6 +3,7 @@ using System.Linq;
 
 using DG.Tweening;
 
+using UnityEditor.PackageManager;
 using UnityEditor.SearchService;
 
 using UnityEngine;
@@ -358,16 +359,14 @@ public class LevelManager : MonoBehaviour
     }*/
 
     /// <summary>
-    /// Normalde gridde kalanların hepsini spawn etmesi lazım ama belirsiz bilmiyorum.
+    /// Normalde gridde kalanların hepsini poola atması lazım ama belirsiz bilmiyorum.
     /// </summary>
     public void ReturnToPoolAll()
     {
-        Debug.LogWarning("ReturnToPoolAll Called");
-
         if (ColorObjects == null) return;
 
-        int rows = ColorObjects.GetLength(0);
-        int cols = ColorObjects.GetLength(1);
+        int rows = LevelData.RowCount;
+        int cols = LevelData.ColumnCount;
 
         for (int row = 0; row < rows; row++)
         {
