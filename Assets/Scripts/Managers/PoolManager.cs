@@ -87,7 +87,7 @@ public class PoolManager : MonoBehaviour
             return;
         }
 
+        queue.Enqueue(objectToReturn); 
         objectToReturn.SetActive(false);
-        queue.Enqueue(objectToReturn);
     }
 }

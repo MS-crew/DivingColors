@@ -75,11 +75,9 @@ public class LevelManager : MonoBehaviour
     private void ObjectiveExpired(ColorObject expiredObject)
     {
         ColorObjects[expiredObject.RowIndex, expiredObject.ColumnIndex] = null;
+        expiredObject.gameObject.ReturnToPool();
 
         RebuildColumn(expiredObject.ColumnIndex);
-
-        expiredObject.gameObject.ReturnToPool();
-        expiredObject.RowIndex = expiredObject.ColumnIndex = 0;
     }
 
     public void Initialize(LevelDataSO levelData)

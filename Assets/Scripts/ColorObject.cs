@@ -70,13 +70,13 @@ public class ColorObject : MonoBehaviour
         UpdateText();
 
         if (lifeTime <= 0)
-            transform.DOScale(0, HideAnimTime).SetEase(Ease.InBack).OnComplete(Expired);
+            transform.DOScale(0, HideAnimTime).SetEase(Ease.InBack).OnComplete(() => Expired());
     }
 
     private void Expired()
     {
         //InputControllerManager.Instance.IsInputEnabled = false;
-        Timing.CallDelayed(Timing.WaitForOneFrame,() => EventManager.ObjectiveExpired(this));
+        EventManager.ObjectiveExpired(this); 
         //InputControllerManager.Instance.IsInputEnabled = true;
     }
 
