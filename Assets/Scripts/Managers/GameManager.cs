@@ -1,73 +1,130 @@
-using MEC;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-using Unity.VisualScripting;
+using MEC;
 
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager Instance { get; private set; }
+
     public const string menuSceneName = "Menu";
     public const string levelSceneName = "Level";
     public const string clearSceneName = "ClearScene";
+    public const string levelsResourcePath = "Levels";
 
-    public static GameManager Instance { get; private set; }
-
+    private const float gameOverDelay = 2f;
+    private const float activeTimeScale = 1f;
+    private const float stoppedTimeScale = 0f;
+    
     private void Awake() => Instance = Instance.SetSingleton(this);
 
     private void OnEnable()
     {
-        EventManager.OnGameEnded += GameEnded; 
+        EventManager.OnGameEnded += GameOver;
+        EventManager.OnSlideUsed += CheckGame;
+        EventManager.OnGameFinished += GameFinished;
     }
 
     private void OnDisable()
     {
-        EventManager.OnGameEnded -= GameEnded;
+        EventManager.OnGameEnded -= GameOver;
+        EventManager.OnSlideUsed -= CheckGame;
+        EventManager.OnGameFinished -= GameFinished;
     }
 
-    private void GameEnded()
+    private void CheckGame(Slide _, List<ColorObject> _2)
     {
-        Time.timeScale = 0; 
+        if (InputControllerManager.Instance.InputAttempt <= 0)
+        {
+            Timing.CallDelayed(gameOverDelay, EventManager.GameEnded);
+            return;
+        }
+
+        if (LevelManager.Instance.AreAllObjectivesCompleted())
+        {
+            Timing.CallDelayed(gameOverDelay, EventManager.GameFinished);
+            return;
+        }
+    }
+
+    private void GameFinished()
+    {
+        Time.timeScale = stoppedTimeScale;
+        UIManager.Instance.ShowPanel<GameFinished>();
+        InputControllerManager.Instance.IsInputEnabled = false;
+    }
+
+
+    private void GameOver()
+    {
+        Time.timeScale = stoppedTimeScale; 
         UIManager.Instance.ShowPanel<GameOver>();
         InputControllerManager.Instance.IsInputEnabled = false;
-        Debug.Log("Game Ended");
     }
 
-    public void StartLevel()
+    public IEnumerator<float> StartLevel(LevelDataSO leveldata)
     {
         ScoreManager.Instance.Score = 0;
         SceneManager.LoadScene(levelSceneName);
         UIManager.Instance.ShowPanel<InGame>();
-        Timing.CallDelayed(0.25f,()=> 
-        {
-            ColorObjectsManager.Instance?.Generate();
-        });
-        InputControllerManager.Instance.IsInputEnabled = true;
+
+        yield return Timing.WaitUntilTrue(() => SceneManager.GetActiveScene().name == levelSceneName &&  LevelManager.Instance != null);
+
+        LevelManager.Instance.Initialize(leveldata);
+        InputControllerManager.Instance.Reset();
+    }
+
+    public bool TryStartNextLevel()
+    {
+        uint oldLevelId = LevelManager.Instance.LevelData.LevelId;
+        LevelDataSO[] allLevels = Resources.LoadAll<LevelDataSO>(GameManager.levelsResourcePath).OrderBy(lvl => lvl.LevelId).ToArray();
+        int index = Array.FindIndex(allLevels, lvl => lvl.LevelId == oldLevelId);
+
+        if (index == -1 || index == allLevels.Length - 1)
+            return false;
+
+        LevelDataSO nextLevel = allLevels[index + 1];
+        if (nextLevel == null) 
+            return false;
+
+        Timing.RunCoroutine(StartLevel(nextLevel));
+        return true;
     }
 
     public void ReturnToMainMenu()
     {
-        Time.timeScale = 1f;
+        LevelManager.Instance.ReturnToPoolAll();
+
+        Time.timeScale = activeTimeScale;
         SceneManager.LoadScene(clearSceneName);
+        SceneManager.LoadScene(menuSceneName);
         UIManager.Instance.ShowPanel<Menu>();
     }
 
     public void RestartLevel() 
     {
-        Time.timeScale = 1f;
+        LevelManager.Instance.ReturnToPoolAll();
+
+        LevelDataSO levelDataSO = LevelManager.Instance.LevelData;
+
+        Time.timeScale = activeTimeScale;
         SceneManager.LoadScene(clearSceneName);
-        StartLevel();
+        Timing.RunCoroutine(StartLevel(levelDataSO));
     }
 
     public void PauseGame()
     {
-        Time.timeScale = 0;
+        Time.timeScale = stoppedTimeScale;
         InputControllerManager.Instance.IsInputEnabled = false;
     }
 
     public void ResumeGame()
     {
-        Time.timeScale = 1;
+        Time.timeScale = activeTimeScale;
         InputControllerManager.Instance.IsInputEnabled = true;
     }
 

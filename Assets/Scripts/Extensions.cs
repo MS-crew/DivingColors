@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using UnityEngine;
+
+using static Assets.PublicEnums;
 
 using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
@@ -52,6 +55,17 @@ public static class Extensions
         PoolManager.Instance.ReturnToPool(obj as GameObject, id);
 
         return obj;
+    }
+
+    public static Color GetUnityColor(this ColorType type)
+    {
+        return type switch
+        {
+            ColorType.Red => Color.red,
+            ColorType.Yellow => Color.yellow,
+            ColorType.Blue => Color.blue,
+            _ => Color.white
+        };
     }
 }
 

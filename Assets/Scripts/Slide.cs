@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 using DG.Tweening;
 
@@ -12,135 +11,153 @@ using static Assets.PublicEnums;
 public class Slide : MonoBehaviour
 {
     [SerializeField] private Light avaliableLight;
-    [SerializeField] private Transform slidePoint; 
+    [SerializeField] private Transform slidePoint;
+
     [field: SerializeField] public int MinObjectCount { get; private set; }
     [field: SerializeField] public ColorType Color { get; private set; }
 
-    private bool isLocked = false;
+    public bool IsLocked { get; private set; } = false;
+
+
     private Vector3 forceDirection;
     private const float slideDuration = 0.5f;
     private readonly List<ColorObject> selectedObjects = new(5);
 
-    private void Awake() => forceDirection = (transform.position - slidePoint.position).normalized;
+    private void Awake() => forceDirection = (transform.position + slidePoint.position).normalized;
 
     private void OnEnable()
     {
-        Timing.CallDelayed(0.1f, ()=> ColorObjectsManager.Instance.Slides.Add(this));
-        // geçiçi delay ColorObjectsManager.Instance.Slides.Add(this);
+        if (LevelManager.Instance != null)
+            LevelManager.Instance.Slides.Add(this);
+
         EventManager.OnSlideUsed += OnSlideUsed;
     }
 
     private void OnDisable()
     {
-        ColorObjectsManager.Instance.Slides.Remove(this);
+        if (LevelManager.Instance != null)
+            LevelManager.Instance.Slides.Remove(this);
+
         EventManager.OnSlideUsed -= OnSlideUsed;
     }
 
-    private void OnSlideUsed(Slide slide)
+    private void OnSlideUsed(Slide slide, List<ColorObject> _)
     {
         if (slide == this)
         {
-            isLocked = true;
+            IsLocked = true;
             avaliableLight.color = UnityEngine.Color.red;
         }
         else
-        {  
-            if (!isLocked)
+        {
+            if (!IsLocked)
                 return;
 
             avaliableLight.color = UnityEngine.Color.green;
-            isLocked = false;
+            IsLocked = false;
         }
     }
 
-    public async void OnClicked()
+    public IEnumerator<YieldInstruction> OnClicked()
     {
-        if (isLocked)
-            return;
-
         InputControllerManager.Instance.IsInputEnabled = false;
 
-        ColorObjectsManager colorObjectsManager = ColorObjectsManager.Instance;
+        LevelManager lvlManager = LevelManager.Instance;
 
-        selectedObjects.Clear();
-
-        if (colorObjectsManager.ColorObjects == null)
-            return;
-
-        int cols = colorObjectsManager.ColorObjects.GetLength(1);
-        for (int c = 0; c < cols; c++)
-        {
-            GameObject Object = colorObjectsManager.ColorObjects[0, c];
-            if (Object == null)
-                continue;
-
-            if (!Object.TryGetComponent(out ColorObject colorObject))
-                continue;
-
-            if (colorObject.ColorType != Color)
-                continue;
-
-            selectedObjects.Add(colorObject);
-        }
+        GetAvaliableObjects(lvlManager);
 
         if (selectedObjects.Count < MinObjectCount)
+            yield return RejectSelecteds(selectedObjects).WaitForCompletion();
+        else
+            yield return CollectSelecteds(selectedObjects, lvlManager).WaitForCompletion();
+
+        Timing.CallDelayed(Timing.WaitForOneFrame, () =>
         {
-            await RejectSelecteds(selectedObjects);
+            EventManager.SlideUsed(this, selectedObjects);
+        });
 
-            InputControllerManager.Instance.IsInputEnabled = true;
-            Debug.Log("Not enough objects to slide.");
-            return;
-        }
-
-        await CollectSelected(selectedObjects, colorObjectsManager);
-
-        EventManager.SlideUsed(this);
-
-        if (!HasAnyAvailableSlide(colorObjectsManager))
-        {
-            Timing.CallDelayed(1.5f, ()=> EventManager.GameEnded());
-            return;
-        }
-
-        InputControllerManager.Instance.IsInputEnabled = true;
+        //EventManager.SlideUsed(this, selectedObjects);
     }
 
-    private async Task CollectSelected(List<ColorObject> selectedObjects, ColorObjectsManager colorObjectsManager)
+    private void GetAvaliableObjects(LevelManager lvlManager)
     {
+        selectedObjects.Clear();
+
+        ColorObject[,] grid = lvlManager.ColorObjects;
+        int rows = lvlManager.LevelData.RowCount;
+        int cols = lvlManager.LevelData.ColumnCount;
+
+        for (int col = 0; col < cols; col++)
+        {
+            ColorObject firstObj = grid[0, col];
+            if (firstObj == null)
+                continue;
+
+            if (firstObj.ColorType != Color)
+                continue;
+
+            selectedObjects.Add(firstObj);
+
+            for (int row = 1; row < rows; row++) 
+            {
+                ColorObject nextObj = grid[row, col];
+                if (nextObj == null)
+                    break;
+
+                if (nextObj.ColorType != Color)
+                    break;
+
+                selectedObjects.Add(nextObj);
+            }
+        }
+
+        if (lvlManager.LevelData.CombosActive && selectedObjects.Count >= lvlManager.LevelData.minComboCount)
+        {
+            selectedObjects.Clear();
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    ColorObject obj = grid[r, c];
+                    if (obj == null)
+                        continue;
+
+                    if (obj.ColorType != Color)
+                        continue;
+
+                    selectedObjects.Add(obj);
+                }
+            }
+        }
+    }
+
+    private Sequence CollectSelecteds(List<ColorObject> selectedObjects, LevelManager lvlManager)
+    {
+        Sequence finalSeq = DOTween.Sequence();
+
         foreach (ColorObject obj in selectedObjects)
         {
-            await obj.transform.DOMove(slidePoint.position, slideDuration).AsyncWaitForCompletion();
-            obj.GetComponent<Rigidbody>().AddForce(forceDirection * 40, ForceMode.Impulse);
-
-            ScoreManager.Instance.Score += 1;
-            SoundManager.Instance.PlayGlobalSound(obj.Collectsound);
-            Timing.CallDelayed(3f, () => obj.gameObject.ReturnToPool());
-
-            colorObjectsManager.ColorObjects[obj.RowIndex, obj.ColumnIndex] = null;
-
-            Sequence mainSequance = DOTween.Sequence();
-            for (int row = obj.RowIndex + 1; row < colorObjectsManager.Rows; row++)
+            Rigidbody rb = obj.Rb;
+            obj.transform.DOMove(slidePoint.position, slideDuration).OnComplete(() =>
             {
-                GameObject objectWillMove = colorObjectsManager.ColorObjects[row, obj.ColumnIndex];
+                rb.velocity = rb.angularVelocity = Vector3.zero;
+                rb.AddForce(forceDirection * 35, ForceMode.Impulse);
+            });
 
-                if (objectWillMove == null)
-                    continue;
+            if (lvlManager.CollectionObjectives.ContainsKey(Color))
+                ScoreManager.Instance.AddObjective(Color);
 
-                colorObjectsManager.ColorObjects[row, obj.ColumnIndex] = null;
+            ScoreManager.Instance.Score++;
+            SoundManager.Instance.PlayGlobalSound(obj.Collectsound);
 
-                colorObjectsManager.ColorObjects[row - 1, obj.ColumnIndex] = objectWillMove;
-                objectWillMove.GetComponent<ColorObject>().RowIndex = row - 1;
-
-                Vector3 newPos = colorObjectsManager.FindPosition(row - 1, obj.ColumnIndex);
-
-                mainSequance.Join(objectWillMove.transform.DOMove(newPos, 0.5f));
-            }
-
-            await mainSequance.AsyncWaitForCompletion();
+            Timing.CallDelayed(3f, () => obj.gameObject.ReturnToPool());
         }
+
+        return finalSeq;
     }
 
-    private async Task RejectSelecteds(List<ColorObject> selectedObjects)
+    private Sequence RejectSelecteds(List<ColorObject> selectedObjects)
     {
         Sequence mainSequence = DOTween.Sequence();
         foreach (ColorObject obj in selectedObjects)
@@ -152,10 +169,11 @@ public class Slide : MonoBehaviour
                 .Append(t.DORotate(new Vector3(0, 0, 15), 0.25f, RotateMode.LocalAxisAdd).SetEase(Ease.OutQuad)));
         }
 
-        await mainSequence.AsyncWaitForCompletion();
+        return mainSequence;
     }
 
-    private bool HasAnyAvailableSlide(ColorObjectsManager colorObjectsManager)
+    /* Eski
+    private bool HasAnyAvailableSlide(LevelManager colorObjectsManager)
     {
         if (colorObjectsManager.ColorObjects == null)
             return false;
@@ -186,5 +204,5 @@ public class Slide : MonoBehaviour
         }
 
         return false;
-    }
+    }*/
 }

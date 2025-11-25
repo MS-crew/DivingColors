@@ -966,7 +966,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'Play
+  m_Text: 'Levels
 
 '
 --- !u!1 &8287100861226710608
@@ -1027,9 +1027,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca834cf9f878f2543aa3d95636cc031c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playButton: {fileID: 6009888872326219158}
-  settingsButton: {fileID: 4108477773272683874}
   quitButton: {fileID: 6020983111064285170}
+  settingsButton: {fileID: 4108477773272683874}
+  levelSelectButton: {fileID: 6009888872326219158}
 --- !u!1 &8731367633533014121
 GameObject:
   m_ObjectHideFlags: 0
@@ -1190,8 +1190,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -6.9959717, y: -3.4979858}
+  m_SizeDelta: {x: 13.992, y: 34.98}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7672444125458095815
 CanvasRenderer:
@@ -1222,10 +1222,10 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_Sprite: {fileID: 21300056, guid: 1eaee135ce037439d925cee5e41ce026, type: 3}
-  m_Type: 0
+  m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  m_FillMethod: 4
+  m_FillMethod: 0
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0

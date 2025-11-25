@@ -1,4 +1,8 @@
+using System.Collections.Generic;
+
 using UnityEngine;
+
+using static Assets.PublicEnums;
 
 public class ScoreManager : MonoBehaviour
 {
@@ -7,6 +11,8 @@ public class ScoreManager : MonoBehaviour
     private int _score = 0;
 
     public bool IsHighScore { get; set; }
+
+    public Dictionary<ColorType, int> CollectedObjectives { get; set; } = new Dictionary<ColorType, int>();
 
     public int Score
     {
@@ -30,5 +36,18 @@ public class ScoreManager : MonoBehaviour
         Instance = null;
     }
 
-    private void ResetScore() => Score = 0;
+    private void ResetScore() 
+    {
+        Score = 0;
+        CollectedObjectives.Clear();
+    }
+
+    public void AddObjective(ColorType type)
+    {
+        if (!CollectedObjectives.ContainsKey(type))
+            CollectedObjectives[type] = 0;
+
+        CollectedObjectives[type] += 1;
+        EventManager.ObjectiveUpdated(type);
+    }
 }
