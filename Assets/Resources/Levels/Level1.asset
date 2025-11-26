@@ -22,7 +22,7 @@ MonoBehaviour:
   - {fileID: 7966371818167625382, guid: 6caf43dac8621134ab2d23ae3d038477, type: 3}
   - {fileID: 7776694813830996801, guid: d839a77a9b1b99348a9160cca927ddea, type: 3}
   SlidesPrefabs:
-  - {fileID: 5021489318916719396, guid: efc22728c212c844d93acba5ed3f32c4, type: 3}
+  - {fileID: 7549628478534837628, guid: e1a5ff89f04334a4bb1682b6b0696329, type: 3}
   - {fileID: 2607421369275955895, guid: d07e5d704666ed745a0609fad5a572f0, type: 3}
   - {fileID: 3035724610886838024, guid: 774ffe21fd574a24f97d562a9174f32f, type: 3}
   - {fileID: 2882031806795744869, guid: 8e020b57fb3bee846a6961c26b264d7a, type: 3}
@@ -31,7 +31,7 @@ MonoBehaviour:
   Objectives:
   - Color: 0
     TargetAmount: 2
-    SpawnChanceMultiplier: 0.2
+    SpawnChanceMultiplier: 0.33
   - Color: 3
     TargetAmount: 3
     SpawnChanceMultiplier: 0.2

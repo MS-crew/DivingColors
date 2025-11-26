@@ -40,6 +40,7 @@ public class GameManager : MonoBehaviour
     {
         if (InputControllerManager.Instance.InputAttempt <= 0)
         {
+            InputControllerManager.Instance.IsInputEnabled = false;
             Timing.CallDelayed(gameOverDelay, EventManager.GameEnded);
             return;
         }
@@ -66,15 +67,24 @@ public class GameManager : MonoBehaviour
         InputControllerManager.Instance.IsInputEnabled = false;
     }
 
-    public IEnumerator<float> StartLevel(LevelDataSO leveldata)
+    public IEnumerator<float> StartLevel(LevelDataSO leveldata, bool useCleanScene)
     {
-        ScoreManager.Instance.Score = 0;
+        ScoreManager.Instance.ResetScore();
+
+        if (useCleanScene)
+        {
+            SceneManager.LoadScene(clearSceneName);
+            yield return Timing.WaitForOneFrame;
+        }
+            
         SceneManager.LoadScene(levelSceneName);
-        UIManager.Instance.ShowPanel<InGame>();
 
         yield return Timing.WaitUntilTrue(() => SceneManager.GetActiveScene().name == levelSceneName &&  LevelManager.Instance != null);
 
+        UIManager.Instance.ShowPanel<InGame>(); 
+        
         LevelManager.Instance.Initialize(leveldata);
+
         InputControllerManager.Instance.Reset();
     }
 
@@ -91,7 +101,7 @@ public class GameManager : MonoBehaviour
         if (nextLevel == null) 
             return false;
 
-        Timing.RunCoroutine(StartLevel(nextLevel));
+        Timing.RunCoroutine(StartLevel(nextLevel, true));
         return true;
     }
 
@@ -105,15 +115,13 @@ public class GameManager : MonoBehaviour
         UIManager.Instance.ShowPanel<Menu>();
     }
 
-    public void RestartLevel() 
+    public void RestartLevel()
     {
-        LevelManager.Instance.ReturnToPoolAll();
-
-        LevelDataSO levelDataSO = LevelManager.Instance.LevelData;
-
         Time.timeScale = activeTimeScale;
-        SceneManager.LoadScene(clearSceneName);
-        Timing.RunCoroutine(StartLevel(levelDataSO));
+        LevelManager lvl = LevelManager.Instance;
+
+        lvl.ReturnToPoolAll();
+        Timing.RunCoroutine(StartLevel(lvl.LevelData, true));
     }
 
     public void PauseGame()

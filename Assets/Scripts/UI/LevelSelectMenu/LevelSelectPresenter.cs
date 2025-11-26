@@ -20,6 +20,6 @@ public class LevelSelectPresenter
     public void OnLevelSelected(LevelDataSO selectedLevel) 
     { 
         Debug.Log($"Level selected: {selectedLevel.LevelId}");
-        Timing.RunCoroutine(GameManager.Instance.StartLevel(selectedLevel)); 
+        Timing.RunCoroutine(GameManager.Instance.StartLevel(selectedLevel, false)); 
     }
 }

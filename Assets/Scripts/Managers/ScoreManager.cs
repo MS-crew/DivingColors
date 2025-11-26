@@ -36,7 +36,7 @@ public class ScoreManager : MonoBehaviour
         Instance = null;
     }
 
-    private void ResetScore() 
+    public void ResetScore() 
     {
         Score = 0;
         CollectedObjectives.Clear();

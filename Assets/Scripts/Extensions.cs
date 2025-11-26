@@ -50,13 +50,15 @@ public static class Extensions
         return thisInstance;
     }
 
+    public static T ReturnToPool<T>(this T obj, byte id = 0) where T : MonoBehaviour
+    {
+        PoolManager.Instance.ReturnToPool(obj.gameObject, id);
+
+        return obj;
+    }
+
     public static GameObject ReturnToPool(this GameObject obj, byte id = 0)
     {
-        if (obj.TryGetComponent(out ColorObject color))
-        {
-            color.ColumnIndex = color.RowIndex = -0;
-        }
-
         PoolManager.Instance.ReturnToPool(obj, id);
 
         return obj;

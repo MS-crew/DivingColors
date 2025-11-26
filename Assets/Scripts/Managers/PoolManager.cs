@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+
 using UnityEngine;
 
 public class PoolManager : MonoBehaviour
@@ -76,18 +78,26 @@ public class PoolManager : MonoBehaviour
 
     public void ReturnToPool(GameObject objectToReturn, byte id = 0)
     {
-        if (id == 0)
-            id = objectToReturn.GetComponent<PooledObject>().poolID;
-
-        Queue<GameObject> queue = poolArray[id];
-
-        if (queue == null)
+        try
         {
-            Destroy(objectToReturn);
-            return;
-        }
+            if (id == 0)
+                id = objectToReturn.GetComponent<PooledObject>().poolID;
 
-        queue.Enqueue(objectToReturn); 
-        objectToReturn.SetActive(false);
+            Queue<GameObject> queue = poolArray[id];
+
+            if (queue == null)
+            {
+                Destroy(objectToReturn);
+                return;
+            }
+
+            queue.Enqueue(objectToReturn);
+            objectToReturn.SetActive(false);
+        }
+        catch(Exception ex)
+        {
+            Debug.LogError($"Error while return to pool {ex.Message}");
+            Destroy(objectToReturn);
+        }
     }
 }

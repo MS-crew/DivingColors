@@ -21,7 +21,7 @@ public class Slide : MonoBehaviour
 
     private Vector3 forceDirection;
     private const float slideDuration = 0.5f;
-    private readonly List<ColorObject> selectedObjects = new(5);
+    private readonly List<ColorObject> selectedObjects = new(15);
 
     private void Awake() => forceDirection = (transform.position + slidePoint.position).normalized;
 
@@ -67,16 +67,53 @@ public class Slide : MonoBehaviour
         GetAvaliableObjects(lvlManager);
 
         if (selectedObjects.Count < MinObjectCount)
-            yield return RejectSelecteds(selectedObjects).WaitForCompletion();
+        {
+            selectedObjects.Clear();
+            // yield return RejectSelecteds(selectedObjects).WaitForCompletion();
+        }
         else
             yield return CollectSelecteds(selectedObjects, lvlManager).WaitForCompletion();
 
-        Timing.CallDelayed(Timing.WaitForOneFrame, () =>
-        {
-            EventManager.SlideUsed(this, selectedObjects);
-        });
+        EventManager.SlideUsed(this, selectedObjects);
+    }
 
-        //EventManager.SlideUsed(this, selectedObjects);
+    private Sequence CollectSelecteds(List<ColorObject> selected, LevelManager lvlManager)
+    {
+        Sequence finalSeq = DOTween.Sequence();
+
+        foreach (ColorObject obj in selectedObjects)
+        {
+            Rigidbody rb = obj.Rb;
+            finalSeq.Join(obj.transform.DOMove(slidePoint.position, slideDuration).OnComplete(() =>
+            {
+                rb.velocity = rb.angularVelocity = Vector3.zero;
+                rb.AddForce(forceDirection * 35, ForceMode.Impulse);
+            }));
+
+            if (lvlManager.CollectionObjectives.ContainsKey(Color))
+                ScoreManager.Instance.AddObjective(Color);
+
+            ScoreManager.Instance.Score++;
+            SoundManager.Instance.PlayGlobalSound(obj.Collectsound);
+        }
+
+        return finalSeq;
+    }
+
+    private Sequence RejectSelecteds(List<ColorObject> selectedObjects)
+    {
+        selectedObjects.Clear();
+        Sequence mainSequence = DOTween.Sequence();
+        foreach (ColorObject obj in selectedObjects)
+        {
+            Transform t = obj.transform;
+            mainSequence.Join(DOTween.Sequence()
+                .Append(t.DORotate(new Vector3(0, 0, 15), 0.25f, RotateMode.LocalAxisAdd).SetEase(Ease.OutQuad))
+                .Append(t.DORotate(new Vector3(0, 0, -30), 0.5f, RotateMode.LocalAxisAdd).SetEase(Ease.InOutQuad))
+                .Append(t.DORotate(new Vector3(0, 0, 15), 0.25f, RotateMode.LocalAxisAdd).SetEase(Ease.OutQuad)));
+        }
+
+        return mainSequence;
     }
 
     private void GetAvaliableObjects(LevelManager lvlManager)
@@ -98,7 +135,7 @@ public class Slide : MonoBehaviour
 
             selectedObjects.Add(firstObj);
 
-            for (int row = 1; row < rows; row++) 
+            for (int row = 1; row < rows; row++)
             {
                 ColorObject nextObj = grid[row, col];
                 if (nextObj == null)
@@ -130,46 +167,6 @@ public class Slide : MonoBehaviour
                 }
             }
         }
-    }
-
-    private Sequence CollectSelecteds(List<ColorObject> selectedObjects, LevelManager lvlManager)
-    {
-        Sequence finalSeq = DOTween.Sequence();
-
-        foreach (ColorObject obj in selectedObjects)
-        {
-            Rigidbody rb = obj.Rb;
-            obj.transform.DOMove(slidePoint.position, slideDuration).OnComplete(() =>
-            {
-                rb.velocity = rb.angularVelocity = Vector3.zero;
-                rb.AddForce(forceDirection * 35, ForceMode.Impulse);
-            });
-
-            if (lvlManager.CollectionObjectives.ContainsKey(Color))
-                ScoreManager.Instance.AddObjective(Color);
-
-            ScoreManager.Instance.Score++;
-            SoundManager.Instance.PlayGlobalSound(obj.Collectsound);
-
-            Timing.CallDelayed(3f, () => obj.gameObject.ReturnToPool());
-        }
-
-        return finalSeq;
-    }
-
-    private Sequence RejectSelecteds(List<ColorObject> selectedObjects)
-    {
-        Sequence mainSequence = DOTween.Sequence();
-        foreach (ColorObject obj in selectedObjects)
-        {
-            Transform t = obj.transform;
-            mainSequence.Join(DOTween.Sequence()
-                .Append(t.DORotate(new Vector3(0, 0, 15), 0.25f, RotateMode.LocalAxisAdd).SetEase(Ease.OutQuad))
-                .Append(t.DORotate(new Vector3(0, 0, -30), 0.5f, RotateMode.LocalAxisAdd).SetEase(Ease.InOutQuad))
-                .Append(t.DORotate(new Vector3(0, 0, 15), 0.25f, RotateMode.LocalAxisAdd).SetEase(Ease.OutQuad)));
-        }
-
-        return mainSequence;
     }
 
     /* Eski

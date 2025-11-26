@@ -13,19 +13,21 @@ using static Assets.PublicEnums;
 [RequireComponent(typeof(Rigidbody))]
 public class ColorObject : MonoBehaviour
 {
-    private int lifeTime = 0;
-
     private const int MinLifeTime = 2;
     private const float HideAnimTime = 0.3f;
 
     [SerializeField] private TextMeshPro textMeshPro;
 
-    public int RowIndex { get; set; }
-    public int ColumnIndex { get; set; }
-    public Rigidbody Rb { get; private set; }
-
+    [field: SerializeField] public int RowIndex { get; set; }
+    [field: SerializeField] public int ColumnIndex { get; set; }
     [field: SerializeField] public ColorType ColorType { get; private set; }
     [field: SerializeField] public AudioClip Collectsound { get; private set; }
+
+    public Rigidbody Rb { get; private set; }
+
+    private int lifeTime;
+    private bool isObjective;
+    private bool isSubscribedToSlide;
 
     private void Awake() => Rb = GetComponent<Rigidbody>();
 
@@ -35,9 +37,10 @@ public class ColorObject : MonoBehaviour
         if (lvl == null)
             return;
 
-        bool isObjective = lvl.CollectionObjectives.ContainsKey(ColorType);
+        isObjective = lvl.CollectionObjectives.ContainsKey(ColorType);
 
-        textMeshPro.gameObject.SetActive(isObjective);
+        if (textMeshPro != null)
+            textMeshPro.gameObject.SetActive(isObjective);
 
         if (!isObjective)
             return;
@@ -45,7 +48,7 @@ public class ColorObject : MonoBehaviour
         lifeTime = Random.Range(MinLifeTime, lvl.LevelData.RowCount - 1);
         UpdateText();
 
-        EventManager.OnSlideUsed += OnSlideUsed;
+        SubscribeSlideEvents();
     }
 
     private void OnDisable()
@@ -53,31 +56,55 @@ public class ColorObject : MonoBehaviour
         Rb.velocity = Vector3.zero;
         Rb.angularVelocity = Vector3.zero;
 
-        LevelManager lvl = LevelManager.Instance;
-        if (lvl == null)
+        UnsubscribeSlideEvents();
+    }
+
+    private void SubscribeSlideEvents()
+    {
+        if (!isObjective)
             return;
 
-        if (lvl.CollectionObjectives.ContainsKey(ColorType))
-            EventManager.OnSlideUsed -= OnSlideUsed;
+        if (isSubscribedToSlide)
+            return;
+
+        EventManager.OnSlideUsed += OnSlideUsed;
+        isSubscribedToSlide = true;
+    }
+
+    private void UnsubscribeSlideEvents()
+    {
+        if (!isSubscribedToSlide)
+            return;
+
+        EventManager.OnSlideUsed -= OnSlideUsed;
+        isSubscribedToSlide = false;
+    }
+
+    public void DetachFromGrid()
+    {
+        UnsubscribeSlideEvents();
+        RowIndex = -1;
+        ColumnIndex = -1;
     }
 
     private void OnSlideUsed(Slide slide, List<ColorObject> collected)
     {
-        if (collected.Contains(this))
+        if (collected != null && collected.Contains(this))
+            return;
+
+        if (lifeTime <= 0)
             return;
 
         lifeTime--;
         UpdateText();
 
         if (lifeTime <= 0)
-            transform.DOScale(0, HideAnimTime).SetEase(Ease.InBack).OnComplete(() => Expired());
+            transform.DOScale(0f, HideAnimTime).SetEase(Ease.InBack).OnComplete(Expired);
     }
 
     private void Expired()
     {
-        //InputControllerManager.Instance.IsInputEnabled = false;
-        EventManager.ObjectiveExpired(this); 
-        //InputControllerManager.Instance.IsInputEnabled = true;
+        EventManager.ObjectiveExpired(this);
     }
 
     private void UpdateText() => textMeshPro.text = lifeTime.ToString();

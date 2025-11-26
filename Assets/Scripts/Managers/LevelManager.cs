@@ -3,11 +3,9 @@ using System.Linq;
 
 using DG.Tweening;
 
-using UnityEditor.PackageManager;
-using UnityEditor.SearchService;
+using MEC;
 
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 using static Assets.PublicEnums;
 using static UnityEngine.Rendering.DebugUI.Table;
@@ -60,24 +58,56 @@ public class LevelManager : MonoBehaviour
         HashSet<int> affectedColumns = new();
         foreach (ColorObject obj in collected)
         {
-            ColorObjects[obj.RowIndex, obj.ColumnIndex] = null;
+            int row = obj.RowIndex;
+            int col = obj.ColumnIndex;
 
-            affectedColumns.Add(obj.ColumnIndex);
-            obj.ColumnIndex = obj.RowIndex = -1;
+            Debug.Log($"row {row} col {col}");
+
+            if (ColorObjects[row, col] == obj)
+                ColorObjects[row, col] = null;
+
+            affectedColumns.Add(obj.ColumnIndex); 
+
+            obj.RowIndex = -1;
+            obj.ColumnIndex = -1;
         }
 
         foreach (int col in affectedColumns)
         {
             RebuildColumn(col);
         }
+
+        Timing.CallDelayed(3f, () =>
+        {
+            foreach (ColorObject obj in collected)
+                obj.gameObject.ReturnToPool();
+        });
     }
 
     private void ObjectiveExpired(ColorObject expiredObject)
     {
-        ColorObjects[expiredObject.RowIndex, expiredObject.ColumnIndex] = null;
-        expiredObject.gameObject.ReturnToPool();
+        int row = expiredObject.RowIndex;
+        int col = expiredObject.ColumnIndex;
 
-        RebuildColumn(expiredObject.ColumnIndex);
+        if (row < 0 || col < 0)
+        {
+            expiredObject.ReturnToPool();
+            return;
+        }
+
+        ColorObject current = ColorObjects[row, col];
+
+        if (!ReferenceEquals(current, expiredObject))
+        {
+            expiredObject.ReturnToPool();
+            return;
+        }
+
+        ColorObjects[row, col] = null;
+        FillEmptyCell(row, col);
+        expiredObject.ReturnToPool();
+
+        InputControllerManager.Instance.IsInputEnabled = true;
     }
 
     public void Initialize(LevelDataSO levelData)
@@ -242,17 +272,21 @@ public class LevelManager : MonoBehaviour
         }
 
         int existingCount = existing.Count;
+
+        Sequence colSlide = DOTween.Sequence();
         for (int row = 0; row < existingCount; row++)// baştan sirayla tekrar doldur (aşşa kaydır)
         {
             ColorObject cube = existing.Dequeue();
 
-            cube.RowIndex = row;
+            cube.RowIndex = row;    
             cube.ColumnIndex = currentCol;
             ColorObjects[row, currentCol] = cube;
 
             Vector3 targetPos = FindGridPosition(row, currentCol);
-            cube.transform.DOMove(targetPos, 0.35f);
+            colSlide.Join(cube.transform.DOMove(targetPos, 0.35f));
         }
+
+        colSlide.Play();
 
         for (int row = 0; row < rowMax; row++) // boşları doldur
         {
@@ -370,7 +404,7 @@ public class LevelManager : MonoBehaviour
         {
             for (int col = 0; col < cols; col++)
             {
-                ColorObjects[row, col].gameObject.ReturnToPool();
+                ColorObjects[row, col]?.gameObject?.ReturnToPool();
             }
         }
 
