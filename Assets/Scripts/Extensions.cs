@@ -38,7 +38,17 @@ public static class Extensions
 
         return list2[randomIndex];
     }
+    public static T SetSceneSingleton<T>(this T instance, ref T staticInstance) where T : MonoBehaviour
+    {
+        if (staticInstance != null && staticInstance != instance)
+        {
+            Object.Destroy(instance.gameObject);
+            return staticInstance;
+        }
 
+        staticInstance = instance;
+        return instance;
+    }
     public static T SetSingleton<T>(this T instance, T thisInstance) where T : MonoBehaviour
     {
         if (instance != null && instance != thisInstance)
@@ -50,27 +60,22 @@ public static class Extensions
         return thisInstance;
     }
 
-    public static T ReturnToPool<T>(this T obj, byte id = 0) where T : MonoBehaviour
-    {
-        PoolManager.Instance.ReturnToPool(obj.gameObject, id);
+    public static void ReturnToPool<T>(this T obj, byte id = 0) where T : MonoBehaviour => PoolManager.Instance.ReturnToPool(obj.gameObject, id);
 
-        return obj;
-    }
-
-    public static GameObject ReturnToPool(this GameObject obj, byte id = 0)
-    {
-        PoolManager.Instance.ReturnToPool(obj, id);
-
-        return obj;
-    }
+    public static void ReturnToPool(this GameObject obj, byte id = 0) => PoolManager.Instance.ReturnToPool(obj, id);
 
     public static Color GetUnityColor(this ColorType type)
     {
         return type switch
         {
             ColorType.Red => Color.red,
-            ColorType.Yellow => Color.yellow,
             ColorType.Blue => Color.blue,
+            ColorType.Black => Color.black,
+            ColorType.Green => Color.green,
+            ColorType.Pink => Color.magenta,
+            ColorType.Yellow => Color.yellow,
+            ColorType.Orange => new(1f, 0.45f, 0.05f),
+            ColorType.Purple => new Color(124, 1, 217),
             _ => Color.white
         };
     }

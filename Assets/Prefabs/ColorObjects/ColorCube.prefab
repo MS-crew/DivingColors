@@ -150,6 +150,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   textMeshPro: {fileID: 3219222352000932371}
+  <RowIndex>k__BackingField: 0
+  <ColumnIndex>k__BackingField: 0
   <ColorType>k__BackingField: 7
   <Collectsound>k__BackingField: {fileID: 8300000, guid: dc3056347fd2e3a448c27d8c947c39da, type: 3}
 --- !u!114 &2918177230102317269
@@ -165,7 +167,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   poolID: 1
-  poolSize: 10
+  poolSize: 5
 --- !u!96 &4327577803441444628
 TrailRenderer:
   serializedVersion: 3

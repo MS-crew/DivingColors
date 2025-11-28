@@ -144,7 +144,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.09328016, y: 0.17818566}
   m_AnchorMax: {x: 0.71653986, y: 0.47925738}
-  m_AnchoredPosition: {x: 0.1000061, y: 0}
+  m_AnchoredPosition: {x: 0.099975586, y: 0}
   m_SizeDelta: {x: -0.454, y: -0.9449997}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6038413735895041252
@@ -225,7 +225,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.702, y: 0.26125735}
   m_AnchorMax: {x: 0.92313504, y: 0.8114853}
-  m_AnchoredPosition: {x: -1.1999817, y: 0.08900452}
+  m_AnchoredPosition: {x: -1.1999512, y: 0.08898926}
   m_SizeDelta: {x: -1.6876602, y: -0.17840004}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4223709703666140635
@@ -344,7 +344,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.09328016, y: 0.42718568}
   m_AnchorMax: {x: 0.71653986, y: 0.8114853}
-  m_AnchoredPosition: {x: 0.77301025, y: 0.16280365}
+  m_AnchoredPosition: {x: 0.7729492, y: 0.16278076}
   m_SizeDelta: {x: -0.45399857, y: -0.3260002}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4184903310965922699
@@ -401,7 +401,6 @@ GameObject:
   - component: {fileID: 7022954924843202928}
   - component: {fileID: 5037457415460156087}
   - component: {fileID: 1002448824921815278}
-  - component: {fileID: 2410320541001536266}
   m_Layer: 5
   m_Name: LevelCard
   m_TagString: Untagged
@@ -427,11 +426,11 @@ RectTransform:
   - {fileID: 1567448490315384397}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0.5, y: 1}
+  m_AnchorMax: {x: 0.5, y: 1}
+  m_AnchoredPosition: {x: -266, y: -665.8378}
+  m_SizeDelta: {x: 722.5861, y: 279.1623}
+  m_Pivot: {x: 0, y: 1}
 --- !u!222 &7022954924843202928
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -485,23 +484,3 @@ MonoBehaviour:
   levelNameText: {fileID: 6451160562251688239}
   selectButton: {fileID: 1858523085805275353}
   scoreText: {fileID: 2497732355227945738}
---- !u!114 &2410320541001536266
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8020148918029727008}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_IgnoreLayout: 0
-  m_MinWidth: -1
-  m_MinHeight: -1
-  m_PreferredWidth: 523
-  m_PreferredHeight: 929
-  m_FlexibleWidth: -1
-  m_FlexibleHeight: -1
-  m_LayoutPriority: 1

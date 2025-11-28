@@ -69,25 +69,33 @@ public class Slide : MonoBehaviour
         if (selectedObjects.Count < MinObjectCount)
         {
             selectedObjects.Clear();
-            // yield return RejectSelecteds(selectedObjects).WaitForCompletion();
         }
         else
-            yield return CollectSelecteds(selectedObjects, lvlManager).WaitForCompletion();
+        {
+            Sequence seq = CollectSelecteds(selectedObjects, lvlManager);
+            yield return seq.WaitForCompletion();
+        }
 
-        EventManager.SlideUsed(this, selectedObjects);
+        List<ColorObject> collectedSnapshot = new(selectedObjects);
+
+        selectedObjects.Clear();
+
+        EventManager.SlideUsed(this, collectedSnapshot);
     }
 
     private Sequence CollectSelecteds(List<ColorObject> selected, LevelManager lvlManager)
     {
         Sequence finalSeq = DOTween.Sequence();
 
-        foreach (ColorObject obj in selectedObjects)
+        foreach (ColorObject obj in selected)
         {
             Rigidbody rb = obj.Rb;
+
             finalSeq.Join(obj.transform.DOMove(slidePoint.position, slideDuration).OnComplete(() =>
             {
-                rb.velocity = rb.angularVelocity = Vector3.zero;
-                rb.AddForce(forceDirection * 35, ForceMode.Impulse);
+                rb.velocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                rb.AddForce(forceDirection * 10f, ForceMode.Impulse);
             }));
 
             if (lvlManager.CollectionObjectives.ContainsKey(Color))
@@ -148,15 +156,15 @@ public class Slide : MonoBehaviour
             }
         }
 
-        if (lvlManager.LevelData.CombosActive && selectedObjects.Count >= lvlManager.LevelData.minComboCount)
+        /*if (lvlManager.LevelData.CombosActive && selectedObjects.Count >= lvlManager.LevelData.minComboCount)
         {
             selectedObjects.Clear();
 
-            for (int r = 0; r < rows; r++)
+            for (int row = 0; row < rows; row++)
             {
-                for (int c = 0; c < cols; c++)
+                for (int col = 0; col < cols; col++)
                 {
-                    ColorObject obj = grid[r, c];
+                    ColorObject obj = grid[row, col];
                     if (obj == null)
                         continue;
 
@@ -166,7 +174,7 @@ public class Slide : MonoBehaviour
                     selectedObjects.Add(obj);
                 }
             }
-        }
+        }*/
     }
 
     /* Eski

@@ -26,13 +26,19 @@ public class ColorObject : MonoBehaviour
     public Rigidbody Rb { get; private set; }
 
     private int lifeTime;
-    private bool isObjective;
-    private bool isSubscribedToSlide;
+    private Vector3 scaleChache;
+    private bool isObjective, isSubscribedToSlide;
 
-    private void Awake() => Rb = GetComponent<Rigidbody>();
+    private void Awake() 
+    { 
+        Rb = GetComponent<Rigidbody>();
+        scaleChache = transform.localScale;
+    }
 
     private void OnEnable()
     {
+        ResetRigidbody();
+
         LevelManager lvl = LevelManager.Instance;
         if (lvl == null)
             return;
@@ -53,10 +59,14 @@ public class ColorObject : MonoBehaviour
 
     private void OnDisable()
     {
-        Rb.velocity = Vector3.zero;
-        Rb.angularVelocity = Vector3.zero;
-
+        ResetRigidbody();
         UnsubscribeSlideEvents();
+        transform.localScale = scaleChache;
+    }
+
+    private void ResetRigidbody()
+    {
+        Rb.velocity = Rb.angularVelocity = Vector3.zero;
     }
 
     private void SubscribeSlideEvents()

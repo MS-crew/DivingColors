@@ -52,6 +52,10 @@ PrefabInstance:
       propertyPath: poolID
       value: 5
       objectReference: {fileID: 0}
+    - target: {fileID: 2918177230102317269, guid: 75fd3048d72833a4f9d2f51933c00f2d, type: 3}
+      propertyPath: poolSize
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 4162110232721766096, guid: 75fd3048d72833a4f9d2f51933c00f2d, type: 3}
       propertyPath: <ColorType>k__BackingField
       value: 6

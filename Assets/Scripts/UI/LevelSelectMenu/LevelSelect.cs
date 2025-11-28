@@ -1,3 +1,5 @@
+using System.Linq;
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -27,7 +29,7 @@ public class LevelSelect : UIPanel
 
     private void OnReturnClicked() => UIManager.Instance.GoBack();
 
-    public void DisplayLevels(LevelDataSO[] levels)
+    public void DisplayLevels(IOrderedEnumerable<LevelDataSO> levels)
     {
         foreach (Transform child in contentParent)
         {

@@ -18,7 +18,7 @@ namespace Assets
             Orange,
             Black,
             White,
-            Gray
+            Pink
         }
     }
 }
