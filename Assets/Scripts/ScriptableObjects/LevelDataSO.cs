@@ -18,8 +18,8 @@ public class LevelDataSO : ScriptableObject
     public List<GameObject> SlidesPrefabs;
 
     [Header("Combo Settings")]
-    public bool CombosActive = false;
-    public int minComboCount = 7;
+    [SerializeReference, ComboSelector]
+    public List<SlideCombo> Combos = new();
 
     [Header("Objectives Settings")]
     public List<ObjectiveData> Objectives = new();
@@ -32,5 +32,3 @@ public class ObjectiveData
     public int TargetAmount = 0;
     public float SpawnChanceMultiplier = 1f;
 }
-
-

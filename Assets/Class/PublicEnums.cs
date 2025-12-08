@@ -20,5 +20,12 @@ namespace Assets
             White,
             Pink
         }
+
+        public enum ComboTier : int
+        {
+            Super = 0,
+            Mega = 1,
+            Ultra = 2,
+        }
     }
 }

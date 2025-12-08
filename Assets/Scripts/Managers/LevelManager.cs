@@ -68,12 +68,17 @@ public class LevelManager : MonoBehaviour
     private void SlideUsed(Slide slide, List<ColorObject> collected)
     {
         if (collected == null || collected.Count == 0)
-        {
-            InputControllerManager.Instance.IsInputEnabled = true;
-            return;
-        }
+            goto check;
 
         List<ColorObject> localCollected = new(collected);
+
+        foreach (ColorObject obj in localCollected)
+        {
+            ScoreManager.Instance.Score++;
+
+            if (CollectionObjectives.ContainsKey(obj.ColorType))
+                ScoreManager.Instance.AddObjective(obj.ColorType);
+        }
 
         HashSet<int> affectedColumns = new();
 
@@ -109,6 +114,9 @@ public class LevelManager : MonoBehaviour
                 obj.ReturnToPool();
             }
         });
+
+        check:
+        GameManager.Instance.CheckGame(null, null);
     }
 
     private void ObjectiveExpired(ColorObject expiredObject)
@@ -137,8 +145,8 @@ public class LevelManager : MonoBehaviour
         FillEmptyCell(row, col);
         expiredObject.ReturnToPool();
 
-        if (!GameManager.Instance.GameEnded)
-            InputControllerManager.Instance.IsInputEnabled = true;
+        //if (!GameManager.Instance.GameEnded)
+            //InputControllerManager.Instance.IsInputEnabled = true;
     }
 
     public void Initialize(LevelDataSO levelData)
@@ -332,8 +340,8 @@ public class LevelManager : MonoBehaviour
             FillEmptyCell(row, currentCol);
         }
 
-        if (!GameManager.Instance.GameEnded)
-            InputControllerManager.Instance.IsInputEnabled = true;
+        //if (!GameManager.Instance.GameEnded)
+            //InputControllerManager.Instance.IsInputEnabled = true;
     }
 
     /// <summary>

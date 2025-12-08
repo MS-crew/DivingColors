@@ -154,9 +154,41 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5302860554245534576, guid: e0bfab62b8b7232418dd4ce5f183018b, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5302860554245534576, guid: e0bfab62b8b7232418dd4ce5f183018b, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5949186212944985309, guid: e0bfab62b8b7232418dd4ce5f183018b, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6025535808908215737, guid: e0bfab62b8b7232418dd4ce5f183018b, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6025535808908215737, guid: e0bfab62b8b7232418dd4ce5f183018b, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7272951672824171022, guid: e0bfab62b8b7232418dd4ce5f183018b, type: 3}
       propertyPath: m_Name
       value: LevelSelect
+      objectReference: {fileID: 0}
+    - target: {fileID: 8404686494463525330, guid: e0bfab62b8b7232418dd4ce5f183018b, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8404686494463525330, guid: e0bfab62b8b7232418dd4ce5f183018b, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8404686494463525330, guid: e0bfab62b8b7232418dd4ce5f183018b, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

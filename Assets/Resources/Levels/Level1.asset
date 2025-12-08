@@ -26,8 +26,9 @@ MonoBehaviour:
   - {fileID: 2607421369275955895, guid: d07e5d704666ed745a0609fad5a572f0, type: 3}
   - {fileID: 3035724610886838024, guid: 774ffe21fd574a24f97d562a9174f32f, type: 3}
   - {fileID: 2882031806795744869, guid: 8e020b57fb3bee846a6961c26b264d7a, type: 3}
-  CombosActive: 1
-  minComboCount: 10
+  Combos:
+  - rid: 7549432826314883080
+  - rid: 7549432849451188224
   Objectives:
   - Color: 0
     TargetAmount: 2
@@ -35,3 +36,13 @@ MonoBehaviour:
   - Color: 3
     TargetAmount: 3
     SpawnChanceMultiplier: 0.2
+  references:
+    version: 2
+    RefIds:
+    - rid: 7549432826314883080
+      type: {class: ColumnChainCombo, ns: , asm: Assembly-CSharp}
+      data:
+        minChainLength: 4
+    - rid: 7549432849451188224
+      type: {class: PerfectFrontCombo, ns: , asm: Assembly-CSharp}
+      data: 

@@ -18,7 +18,6 @@ public class Slide : MonoBehaviour
 
     public bool IsLocked { get; private set; } = false;
 
-
     private Vector3 forceDirection;
     private const float slideDuration = 0.5f;
     private readonly List<ColorObject> selectedObjects = new(15);
@@ -72,6 +71,7 @@ public class Slide : MonoBehaviour
         }
         else
         {
+            ProcessCombos(lvlManager, selectedObjects);
             Sequence seq = CollectSelecteds(selectedObjects, lvlManager);
             yield return seq.WaitForCompletion();
         }
@@ -98,17 +98,13 @@ public class Slide : MonoBehaviour
                 rb.AddForce(forceDirection * 10f, ForceMode.Impulse);
             }));
 
-            if (lvlManager.CollectionObjectives.ContainsKey(Color))
-                ScoreManager.Instance.AddObjective(Color);
-
-            ScoreManager.Instance.Score++;
             SoundManager.Instance.PlayGlobalSound(obj.Collectsound);
         }
 
         return finalSeq;
     }
 
-    private Sequence RejectSelecteds(List<ColorObject> selectedObjects)
+    private Sequence RejectSelecteds(List<ColorObject> selectedObjects)// kullaným dýþý
     {
         selectedObjects.Clear();
         Sequence mainSequence = DOTween.Sequence();
@@ -129,6 +125,7 @@ public class Slide : MonoBehaviour
         selectedObjects.Clear();
 
         ColorObject[,] grid = lvlManager.ColorObjects;
+
         int rows = lvlManager.LevelData.RowCount;
         int cols = lvlManager.LevelData.ColumnCount;
 
@@ -155,59 +152,32 @@ public class Slide : MonoBehaviour
                 selectedObjects.Add(nextObj);
             }
         }
-
-        /*if (lvlManager.LevelData.CombosActive && selectedObjects.Count >= lvlManager.LevelData.minComboCount)
-        {
-            selectedObjects.Clear();
-
-            for (int row = 0; row < rows; row++)
-            {
-                for (int col = 0; col < cols; col++)
-                {
-                    ColorObject obj = grid[row, col];
-                    if (obj == null)
-                        continue;
-
-                    if (obj.ColorType != Color)
-                        continue;
-
-                    selectedObjects.Add(obj);
-                }
-            }
-        }*/
     }
 
-    /* Eski
-    private bool HasAnyAvailableSlide(LevelManager colorObjectsManager)
+    private void ProcessCombos(LevelManager lm, List<ColorObject> selected)
     {
-        if (colorObjectsManager.ColorObjects == null)
-            return false;
+        List<SlideCombo> combos = lm.LevelData.Combos;
+        if (combos == null || combos.Count == 0)
+            return;
 
-        int cols = colorObjectsManager.ColorObjects.GetLength(1);
-
-        foreach (Slide slide in colorObjectsManager.Slides)
+        byte bestPriority = 0;
+        SlideCombo bestCombo = null;
+        
+        foreach (SlideCombo combo in combos)
         {
-            int matchCount = 0;
+            if (combo == null)
+                continue;
 
-            for (int c = 0; c < cols; c++)
+            if (!combo.IsCanApply(lm, selected))
+                continue;
+
+            if (bestCombo == null || combo.Priority > bestPriority)
             {
-                GameObject obj = colorObjectsManager.ColorObjects[0, c];
-                if (obj == null)
-                    continue;
-
-                if (!obj.TryGetComponent(out ColorObject colorObj))
-                    continue;
-
-                if (colorObj.ColorType != slide.Color)
-                    continue;
-
-                matchCount++;
+                bestCombo = combo;
+                bestPriority = combo.Priority;
             }
-
-            if (matchCount >= slide.MinObjectCount)
-                return true;
         }
 
-        return false;
-    }*/
+        bestCombo?.Apply(lm, selected);
+    }
 }

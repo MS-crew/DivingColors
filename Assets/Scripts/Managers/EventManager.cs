@@ -42,4 +42,11 @@ public static class EventManager
     public static void ResetScore() => OnResetScore?.Invoke();
 
     #endregion
+
+    #region Ui Events
+
+    public static event Action<string, ComboTier, int> OnComboUsed;
+    public static void ComboUsed(string comboName, ComboTier tier, int x) => OnComboUsed?.Invoke(comboName, tier, x);
+
+    #endregion
 }

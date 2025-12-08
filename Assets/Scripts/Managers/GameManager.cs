@@ -41,11 +41,12 @@ public class GameManager : MonoBehaviour
         EventManager.OnGameFinished -= GameFinished;
     }
 
-    private void CheckGame(Slide _, List<ColorObject> _2)
+    public void CheckGame(Slide _, List<ColorObject> _2)
     {
         if (InputControllerManager.Instance.InputAttempt <= 0)
         {
             GameEnded = true;
+            InputControllerManager.Instance.IsInputEnabled = false;
             Timing.CallDelayed(gameOverDelay, EventManager.GameEnded);
             return;
         }
@@ -57,6 +58,8 @@ public class GameManager : MonoBehaviour
             Timing.CallDelayed(gameOverDelay, EventManager.GameFinished);
             return;
         }
+
+        InputControllerManager.Instance.IsInputEnabled = true;
     }
 
     private void GameFinished()

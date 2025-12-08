@@ -134,7 +134,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scoreText: {fileID: 8174820582812914104}
-  sound: {fileID: 8300000, guid: 234a1671096e87048946acaea42e9262, type: 3}
+  sound: {fileID: 8300000, guid: 30ca4f11298b6a74785e96d45e674296, type: 3}
   menuButton: {fileID: 7423152917164643689}
   quitButton: {fileID: 142622938582015156}
   nextLvlButton: {fileID: 1438100166552753259}

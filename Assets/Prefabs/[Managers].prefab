@@ -126,6 +126,7 @@ MonoBehaviour:
   menuMusic: {fileID: 0}
   themaMusicSource: {fileID: 8641174224735436970}
   globalAudioSource: {fileID: 4539285229967716629}
+  comboAudioConfig: {fileID: 11400000, guid: 36455117f48c9c649bddcf2b476ab8b1, type: 2}
 --- !u!82 &8641174224735436970
 AudioSource:
   m_ObjectHideFlags: 0
