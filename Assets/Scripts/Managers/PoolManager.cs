@@ -47,7 +47,7 @@ public class PoolManager : MonoBehaviour
     public GameObject SpawnFromPool(GameObject prefab, Vector3 position, Quaternion rotation)
     {
         if (!prefab.TryGetComponent(out PooledObject pooledObject))
-            throw new System.Exception("Prefab does not have a PooledObject component.");
+            throw new Exception("Prefab does not have a PooledObject component.");
 
         return SpawnFromPool(pooledObject.poolID, position, rotation);
     }
@@ -71,6 +71,9 @@ public class PoolManager : MonoBehaviour
             objectToSpawn = Instantiate(prefab, position, rotation, transform);
         }
 
+        objectToSpawn.transform.parent = null;
+        objectToSpawn.hideFlags = HideFlags.HideInInspector;
+
         return objectToSpawn;
     }
 
@@ -93,6 +96,8 @@ public class PoolManager : MonoBehaviour
 
             queue.Enqueue(objectToReturn);
             objectToReturn.SetActive(false);
+            objectToReturn.hideFlags = HideFlags.None;
+            objectToReturn.transform.parent = transform;
         }
         catch(Exception ex)
         {

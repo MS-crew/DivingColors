@@ -87,8 +87,12 @@ public class Slide : MonoBehaviour
     {
         Sequence finalSeq = DOTween.Sequence();
 
+        AudioClip clip = null;
         foreach (ColorObject obj in selected)
         {
+            if (clip == null)
+                clip = obj.Collectsound;
+
             Rigidbody rb = obj.Rb;
 
             finalSeq.Join(obj.transform.DOMove(slidePoint.position, slideDuration).OnComplete(() =>
@@ -97,10 +101,9 @@ public class Slide : MonoBehaviour
                 rb.angularVelocity = Vector3.zero;
                 rb.AddForce(forceDirection * 10f, ForceMode.Impulse);
             }));
-
-            SoundManager.Instance.PlayGlobalSound(obj.Collectsound);
         }
 
+        SoundManager.Instance.PlayGlobalSound(clip);
         return finalSeq;
     }
 

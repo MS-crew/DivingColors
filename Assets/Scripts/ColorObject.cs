@@ -25,6 +25,30 @@ public class ColorObject : MonoBehaviour
 
     public Rigidbody Rb { get; private set; }
 
+    public bool CanBeClicable 
+    {
+        get
+        {
+            LevelManager levelManager = LevelManager.Instance;
+            if (levelManager == null)
+                return false;
+
+            if (!levelManager.SlideCache.TryGetValue(ColorType, out Slide slide))
+                return false;
+
+            if (slide.IsLocked)
+                return false;
+
+            for (int row = RowIndex; row >= 0; row--)
+            {
+                if (levelManager.ColorObjects[row, ColumnIndex].ColorType != ColorType)
+                    return false;
+            }
+
+            return true; 
+        }
+    }
+
     private int lifeTime;
     private Vector3 scaleChache;
     private bool isObjective, isSubscribedToSlide;
@@ -64,9 +88,9 @@ public class ColorObject : MonoBehaviour
         transform.localScale = scaleChache;
     }
 
-    private void ResetRigidbody()
+    public void OnClicked() 
     {
-        Rb.velocity = Rb.angularVelocity = Vector3.zero;
+        StartCoroutine(LevelManager.Instance.SlideCache[ColorType].OnClicked());
     }
 
     private void SubscribeSlideEvents()
@@ -89,14 +113,6 @@ public class ColorObject : MonoBehaviour
         EventManager.OnSlideUsed -= OnSlideUsed;
         isSubscribedToSlide = false;
     }
-
-    public void DetachFromGrid()
-    {
-        UnsubscribeSlideEvents();
-        RowIndex = -1;
-        ColumnIndex = -1;
-    }
-
     private void OnSlideUsed(Slide slide, List<ColorObject> collected)
     {
         if (collected != null && collected.Contains(this))
@@ -110,6 +126,18 @@ public class ColorObject : MonoBehaviour
 
         if (lifeTime <= 0)
             transform.DOScale(0f, HideAnimTime).SetEase(Ease.InBack).OnComplete(Expired);
+    }
+
+    private void ResetRigidbody()
+    {
+        Rb.velocity = Rb.angularVelocity = Vector3.zero;
+    }
+
+    public void DetachFromGrid()
+    {
+        UnsubscribeSlideEvents();
+        RowIndex = -1;
+        ColumnIndex = -1;
     }
 
     private void Expired()

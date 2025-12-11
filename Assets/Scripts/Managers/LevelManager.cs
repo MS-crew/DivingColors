@@ -18,10 +18,10 @@ public class LevelManager : MonoBehaviour
     public List<Slide> Slides { get; set; } = new();
     public ColorObject[,] ColorObjects { get; private set; }
 
+    public Dictionary<ColorType, Slide> SlideCache { get; private set; } = new();
+    public Dictionary<ColorType, float> ObjectiveChances { get; private set; } = new();
+    public Dictionary<ColorType, int> CollectionObjectives { get; private set; } = new();
 
-    public Dictionary<ColorType, float> ObjectiveChances { get; private set; }
-    public Dictionary<ColorType, int> CollectionObjectives { get; private set; }
-    
 
     [SerializeField] private float xPadding = 2f;
     [SerializeField] private float zPadding = 2f;
@@ -266,6 +266,7 @@ public class LevelManager : MonoBehaviour
 
     private void SpawnSlides()
     {
+        SlideCache.Clear();
         if (LevelData.SlidesPrefabs == null || LevelData.SlidesPrefabs.Count == 0)
             return;
 
@@ -290,7 +291,10 @@ public class LevelManager : MonoBehaviour
             float xOffset = (i - half) * spacing;
 
             Vector3 pos = new(startX + xOffset, y, z);
-            Instantiate(prefab, pos, Quaternion.identity, slidesParent);
+            GameObject slideGo = Instantiate(prefab, pos, Quaternion.identity, slidesParent);
+
+            if (slideGo.TryGetComponent(out Slide slide))
+                SlideCache[slide.Color] = slide;
         }
     }
 

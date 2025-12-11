@@ -1,5 +1,7 @@
 using MEC;
 
+using Unity.VisualScripting;
+
 using UnityEngine;
 
 public class InputControllerManager : MonoBehaviour
@@ -7,7 +9,7 @@ public class InputControllerManager : MonoBehaviour
     public static InputControllerManager Instance;
 
     private const string slideTag = "Slide";
-    
+    private const string colorObjectTag = "ColorObject";
 
     private int _attempt;
     public int InputAttempt
@@ -20,7 +22,6 @@ public class InputControllerManager : MonoBehaviour
         }
     }
 
-    [field: SerializeField]
     public bool IsInputEnabled { get; set; } = true;
 
     private void Awake() => Instance = Instance.SetSingleton(this);
@@ -34,14 +35,25 @@ public class InputControllerManager : MonoBehaviour
         if (!Physics.Raycast(ray, out RaycastHit hit))
             return;
 
-        if (!hit.transform.parent.CompareTag(slideTag))
-            return;
+        if (hit.transform.CompareTag(colorObjectTag))
+        {
+            if (!hit.transform.TryGetComponent(out ColorObject colorObject) || !colorObject.CanBeClicable)
+                return;
 
-        if (!hit.transform.parent.TryGetComponent(out Slide slide) || slide.IsLocked)
+            colorObject.OnClicked();
+            InputAttempt--;
             return;
+        }
 
-        InputAttempt--;
-        StartCoroutine(slide.OnClicked());
+        if (hit.transform.parent.CompareTag(slideTag))
+        {
+            if (!hit.transform.parent.TryGetComponent(out Slide slide) || slide.IsLocked)
+                return;
+
+            StartCoroutine(slide.OnClicked()); 
+            InputAttempt--;
+            return;
+        }
     }
 
     public void Reset()

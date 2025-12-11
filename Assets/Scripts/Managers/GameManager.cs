@@ -96,9 +96,9 @@ public class GameManager : MonoBehaviour
 
         yield return Timing.WaitUntilTrue(() => SceneManager.GetActiveScene().name == levelSceneName && LevelManager.Instance != null);
 
-        UIManager.Instance.ShowPanel<InGame>();
-
         LevelManager.Instance.Initialize(leveldata);
+
+        UIManager.Instance.ShowPanel<InGame>();
 
         InputControllerManager.Instance.Reset();
         InputControllerManager.Instance.IsInputEnabled = true;

@@ -37,20 +37,28 @@ public sealed class PerfectFrontCombo : SlideCombo
         int rows = lm.LevelData.RowCount;
         int cols = lm.LevelData.ColumnCount;
 
-        HashSet<ColorObject> finalSet = new();
+        ColorType frontColor = grid[0, 0].ColorType;
+
+        HashSet<ColorObject> finalSet = new(selected);
+        int addedCount = 0;
 
         for (int row = 0; row < rows; row++)
         {
             for (int col = 0; col < cols; col++)
             {
                 ColorObject obj = grid[row, col];
-                if (obj != null)
-                    finalSet.Add(obj);
+                if (obj == null)
+                    continue;
+
+                if (obj.ColorType != frontColor)
+                    continue;
+
+                if (finalSet.Add(obj))
+                    addedCount++;
             }
         }
 
-        Multiplier = cols;
-
+        Multiplier = selected.Count - addedCount; 
         selected.Clear();
         selected.AddRange(finalSet);
 

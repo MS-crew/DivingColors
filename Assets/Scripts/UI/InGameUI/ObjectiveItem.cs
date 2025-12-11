@@ -22,11 +22,11 @@ public class ObjectiveItem : MonoBehaviour
         UpdateCount(current, target);   
     }
 
-    public void Setup(ColorType color, int current, int target)
+    public void Setup(ColorType color, int target)
     {
         this.colorType = color;
         colorImage.color = color.GetUnityColor();
-        countText.text = $"{current}/{target}";
+        countText.text = $"0/{target}";
     }
 
     public void UpdateCount(int current, int target)

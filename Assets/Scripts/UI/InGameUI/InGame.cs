@@ -64,7 +64,7 @@ public class InGame : UIPanel
 
             if (itemGO.TryGetComponent(out ObjectiveItem item))
             {
-                item.Setup(objective.Key, 0, objective.Value);
+                item.Setup(objective.Key, objective.Value);
             }
         }
     }
