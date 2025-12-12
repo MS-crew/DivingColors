@@ -34,8 +34,5 @@ public class Pause : UIPanel
 
     private void OnClickedMainMenu() => GameManager.Instance.ReturnToMainMenu();
 
-    private void OnClickedSettings() 
-    { 
-        //UIManager.Instance.NavigateTo<SettingsMenu>(UIManager.NavigationMode.Popup); 
-    } 
+    private void OnClickedSettings() => UIManager.Instance.NavigateTo<Settings>(UIManager.NavigationMode.Popup); 
 }

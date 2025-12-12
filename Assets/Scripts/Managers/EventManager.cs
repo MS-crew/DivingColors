@@ -32,6 +32,23 @@ public static class EventManager
 
     #endregion
 
+
+    #region Settings Events
+
+    public static event Action<float> OnMusicVolumeChanged;
+    public static void MusicVolumeChanged(float volume) => OnMusicVolumeChanged?.Invoke(volume);
+
+
+    public static event Action<float> OnUIVolumeChanged;
+    public static void UIVolumeChanged(float volume) => OnUIVolumeChanged?.Invoke(volume);
+
+
+    public static event Action<bool> OnMenuMusicToggled;
+    public static void MenuMusicToggled(bool isEnabled) => OnMenuMusicToggled?.Invoke(isEnabled);
+
+    #endregion
+
+
     #region Score Events
 
     public static event Action<int> OnUpdateScore;
@@ -42,6 +59,7 @@ public static class EventManager
     public static void ResetScore() => OnResetScore?.Invoke();
 
     #endregion
+
 
     #region Ui Events
 

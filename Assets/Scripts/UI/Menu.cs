@@ -23,13 +23,7 @@ public class Menu : UIPanel
 
     private void OnClickedQuit() => GameManager.Instance.Quit();
 
-    private void OnClickedSettings() 
-    {
-        //UIManager.Instance.NavigateTo<Settings>(UIManager.NavigationMode.Replace);
-    }
+    private void OnClickedSettings() => UIManager.Instance.NavigateTo<Settings>(UIManager.NavigationMode.Popup);
 
-    private void OnClickedLevelSelect() 
-    {
-        UIManager.Instance.NavigateTo<LevelSelect>(UIManager.NavigationMode.Replace);
-    }
+    private void OnClickedLevelSelect() => UIManager.Instance.NavigateTo<LevelSelect>(UIManager.NavigationMode.Replace);
 }

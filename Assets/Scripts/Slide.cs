@@ -103,6 +103,10 @@ public class Slide : MonoBehaviour
             }));
         }
 
+#if !UNITY_ANDROID || UNITY_IOS
+        if (UserDataManager.Instance.Data.IsVibrationEnabled) 
+            Handheld.Vibrate();
+#endif
         SoundManager.Instance.PlayGlobalSound(clip);
         return finalSeq;
     }

@@ -39,7 +39,7 @@ public sealed class PerfectFrontCombo : SlideCombo
 
         ColorType frontColor = grid[0, 0].ColorType;
 
-        HashSet<ColorObject> finalSet = new(selected);
+        HashSet<ColorObject> bonusObjects = new();
         int addedCount = 0;
 
         for (int row = 0; row < rows; row++)
@@ -53,14 +53,16 @@ public sealed class PerfectFrontCombo : SlideCombo
                 if (obj.ColorType != frontColor)
                     continue;
 
-                if (finalSet.Add(obj))
+                if (selected.Contains(obj))
+                    continue;
+
+                if (bonusObjects.Add(obj))
                     addedCount++;
             }
         }
 
-        Multiplier = selected.Count - addedCount; 
-        selected.Clear();
-        selected.AddRange(finalSet);
+        Multiplier = addedCount; 
+        selected.AddRange(bonusObjects);
 
         base.Apply(lm, selected);
     }
