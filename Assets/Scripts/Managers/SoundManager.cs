@@ -1,9 +1,6 @@
-using System.Collections;
 using System.Collections.Generic;
 
 using MEC;
-
-using Unity.VisualScripting;
 
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -21,6 +18,8 @@ public class SoundManager : MonoBehaviour
 
     [Header("Combo Audios")]
     [SerializeField] private ComboAudioConfig comboAudioConfig;
+
+    [SerializeField] private AudioClip attemptGainedClip;
 
     private void Awake() 
     { 
@@ -43,19 +42,31 @@ public class SoundManager : MonoBehaviour
     private void OnEnable()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
+       
+        EventManager.OnComboUsed += PlayComboSound;
+        EventManager.OnAttemptGained += PlayAttempGainedSound;
+
+
         EventManager.OnUIVolumeChanged += SfxVolumeChanged;
+        EventManager.OnMenuMusicToggled += MenuMusicToggled;
         EventManager.OnMusicVolumeChanged += MusicVolumeChanged;
         //EventManager.OnPressedUIElement += PlayClickSound;
-        EventManager.OnMenuMusicToggled += MenuMusicToggled;
+       
     }
 
     private void OnDisable()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
-        EventManager.OnUIVolumeChanged -= SfxVolumeChanged;
+
+        EventManager.OnComboUsed -= PlayComboSound;
+        EventManager.OnAttemptGained -= PlayAttempGainedSound;
+
+
+        EventManager.OnUIVolumeChanged -= SfxVolumeChanged; 
+        EventManager.OnMenuMusicToggled -= MenuMusicToggled;
         EventManager.OnMusicVolumeChanged -= MusicVolumeChanged;
         //EventManager.OnPressedUIElement -= PlayClickSound;
-        EventManager.OnMenuMusicToggled -= MenuMusicToggled;
+        
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -75,16 +86,23 @@ public class SoundManager : MonoBehaviour
 
     public void PlayMenuMusic()
     {
-        if (themaMusicSource != null && UserDataManager.Instance.Data.IsMenuMusicEnabled)
-        {
-            themaMusicSource.Play();
-        }
+        if (themaMusicSource == null)
+            return;
+
+        themaMusicSource.Play();
+        themaMusicSource.loop = true;
     }
 
     public void StopMenuMusic()
     {
         if (themaMusicSource != null)
             themaMusicSource.Stop();
+    }
+
+    private void MusicVolumeChanged(float newVolume)
+    {
+        if (themaMusicSource != null)
+            themaMusicSource.volume = newVolume;
     }
 
     private void MenuMusicToggled(bool isEnabled)
@@ -95,22 +113,51 @@ public class SoundManager : MonoBehaviour
             PlayMenuMusic();
     }
 
-    private void SfxVolumeChanged(float newVolume) => globalAudioSource.volume = newVolume;
+    public void StopGlobalSound() 
+    {
+        if (globalAudioSource != null)
+            globalAudioSource.Stop(); 
+    }
 
-    private void MusicVolumeChanged(float newVolume) => themaMusicSource.volume = newVolume;
+    public void PlayClickSound() 
+    {
+        if (globalAudioSource != null)
+            globalAudioSource.PlayOneShot(defaultClickSound);
+    }
 
-    public void StopGlobalSound() => globalAudioSource.Stop();
+    public void PlayGlobalSound(AudioClip clip, bool forcePlay = true)
+    {
+        if (globalAudioSource == null)
+            return;
 
-    public void PlayClickSound() => globalAudioSource.PlayOneShot(defaultClickSound);
+        if (forcePlay || !globalAudioSource.isPlaying)
+            globalAudioSource.PlayOneShot(clip); 
+    }
 
-    public void PlayGlobalSound(AudioClip clip) => globalAudioSource.PlayOneShot(clip);
-
-    public void PlayComboSound(int x)
+    private void SfxVolumeChanged(float newVolume) 
+    {
+        if (globalAudioSource != null)
+            globalAudioSource.volume = newVolume;
+    }
+  
+    private void PlayComboSound(string _, ComboTier _2, int x)
     {
         if (comboAudioConfig == null)
             return;
 
         AudioClip clip = comboAudioConfig.GetRandomClip(x);
+        if (clip == null)
+            return;
+
+        PlayGlobalSound(clip);
+    }
+
+    private void PlayAttempGainedSound(int _) 
+    {
+        if (comboAudioConfig == null)
+            return;
+
+        AudioClip clip = attemptGainedClip;
         if (clip == null)
             return;
 

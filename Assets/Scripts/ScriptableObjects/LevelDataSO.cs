@@ -23,6 +23,9 @@ public class LevelDataSO : ScriptableObject
 
     [Header("Objectives Settings")]
     public List<ObjectiveData> Objectives = new();
+
+    [Header("Special Items")]
+    public List<SpecialObject> SpecialObjects;
 }
 
 [Serializable]
@@ -31,4 +34,13 @@ public class ObjectiveData
     public ColorType Color;
     public int TargetAmount = 0;
     public float SpawnChanceMultiplier = 1f;
+}
+
+[Serializable]
+public class SpecialObject
+{
+    public GameObject Prefab;
+    public float SpawnChance = 0.1f;
+    [Min(1)] 
+    public int MaxOnSameTime = 1;
 }

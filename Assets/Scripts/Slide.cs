@@ -10,6 +10,7 @@ using static Assets.PublicEnums;
 
 public class Slide : MonoBehaviour
 {
+    [SerializeField] private GameObject barrier;
     [SerializeField] private Light avaliableLight;
     [SerializeField] private Transform slidePoint;
 
@@ -21,6 +22,7 @@ public class Slide : MonoBehaviour
     private Vector3 forceDirection;
     private const float slideDuration = 0.5f;
     private readonly List<ColorObject> selectedObjects = new(15);
+    private static readonly Vector3 resetVector3 = new(0, 0, 90);
 
     private void Awake() => forceDirection = (transform.position + slidePoint.position).normalized;
 
@@ -29,7 +31,7 @@ public class Slide : MonoBehaviour
         if (LevelManager.Instance != null)
             LevelManager.Instance.Slides.Add(this);
 
-        EventManager.OnSlideUsed += OnSlideUsed;
+        EventManager.OnSlideUsing += OnSlideUsed;
     }
 
     private void OnDisable()
@@ -37,7 +39,7 @@ public class Slide : MonoBehaviour
         if (LevelManager.Instance != null)
             LevelManager.Instance.Slides.Remove(this);
 
-        EventManager.OnSlideUsed -= OnSlideUsed;
+        EventManager.OnSlideUsing -= OnSlideUsed;
     }
 
     private void OnSlideUsed(Slide slide, List<ColorObject> _)
@@ -46,53 +48,40 @@ public class Slide : MonoBehaviour
         {
             IsLocked = true;
             avaliableLight.color = UnityEngine.Color.red;
-        }
-        else
-        {
-            if (!IsLocked)
-                return;
 
-            avaliableLight.color = UnityEngine.Color.green;
+            barrier.transform.DOLocalRotate(Vector3.zero, 0.5f).SetEase(Ease.InOutQuad);
+        }
+        else if (IsLocked)
+        {
             IsLocked = false;
+            avaliableLight.color = UnityEngine.Color.green;
+
+            barrier.transform.DOLocalRotate(resetVector3, 0.5f).SetEase(Ease.InOutQuad);
         }
     }
 
     public IEnumerator<YieldInstruction> OnClicked()
     {
-        InputControllerManager.Instance.IsInputEnabled = false;
-
         LevelManager lvlManager = LevelManager.Instance;
 
         GetAvaliableObjects(lvlManager);
 
-        if (selectedObjects.Count < MinObjectCount)
-        {
-            selectedObjects.Clear();
-        }
-        else
+        if (selectedObjects.Count != 0)
         {
             ProcessCombos(lvlManager, selectedObjects);
             Sequence seq = CollectSelecteds(selectedObjects, lvlManager);
             yield return seq.WaitForCompletion();
         }
-
-        List<ColorObject> collectedSnapshot = new(selectedObjects);
-
-        selectedObjects.Clear();
-
-        EventManager.SlideUsed(this, collectedSnapshot);
+        
+        EventManager.SlideUsing(this, selectedObjects);
     }
 
     private Sequence CollectSelecteds(List<ColorObject> selected, LevelManager lvlManager)
     {
         Sequence finalSeq = DOTween.Sequence();
 
-        AudioClip clip = null;
         foreach (ColorObject obj in selected)
         {
-            if (clip == null)
-                clip = obj.Collectsound;
-
             Rigidbody rb = obj.Rb;
 
             finalSeq.Join(obj.transform.DOMove(slidePoint.position, slideDuration).OnComplete(() =>
@@ -103,11 +92,11 @@ public class Slide : MonoBehaviour
             }));
         }
 
-#if !UNITY_ANDROID || UNITY_IOS
+#if UNITY_ANDROID || UNITY_IOS
         if (UserDataManager.Instance.Data.IsVibrationEnabled) 
             Handheld.Vibrate();
 #endif
-        SoundManager.Instance.PlayGlobalSound(clip);
+
         return finalSeq;
     }
 
@@ -142,7 +131,7 @@ public class Slide : MonoBehaviour
             if (firstObj == null)
                 continue;
 
-            if (firstObj.ColorType != Color)
+            if (!firstObj.ColorType.EqualsColorType(Color))
                 continue;
 
             selectedObjects.Add(firstObj);
@@ -153,7 +142,7 @@ public class Slide : MonoBehaviour
                 if (nextObj == null)
                     break;
 
-                if (nextObj.ColorType != Color)
+                if (!nextObj.ColorType.EqualsColorType(Color))
                     break;
 
                 selectedObjects.Add(nextObj);
@@ -167,9 +156,9 @@ public class Slide : MonoBehaviour
         if (combos == null || combos.Count == 0)
             return;
 
-        byte bestPriority = 0;
+        byte firstPriority = 0;
         SlideCombo bestCombo = null;
-        
+
         foreach (SlideCombo combo in combos)
         {
             if (combo == null)
@@ -178,10 +167,10 @@ public class Slide : MonoBehaviour
             if (!combo.IsCanApply(lm, selected))
                 continue;
 
-            if (bestCombo == null || combo.Priority > bestPriority)
+            if (bestCombo == null || combo.Priority > firstPriority)
             {
                 bestCombo = combo;
-                bestPriority = combo.Priority;
+                firstPriority = combo.Priority;
             }
         }
 

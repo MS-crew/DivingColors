@@ -27,12 +27,18 @@ public class InGame : UIPanel
     [SerializeField] private GameObject comboHint;
     [SerializeField] private CanvasGroup comboCanvas;
 
+    [Header("Gain Attempt")]
+    [SerializeField] private TMP_Text gainAttemptText;
+    [SerializeField] private GameObject gainAttemptHint;
+    [SerializeField] private CanvasGroup gainAttemptCanvas;
+
     private void OnEnable()
     {
         Timing.RunCoroutine(SetupUI());
 
         EventManager.OnComboUsed += ComboUsed;
-        EventManager.OnUpdateScore += UpdateScore;
+        EventManager.OnUpdateScore += UpdateScore; 
+        EventManager.OnAttemptGained += AttemptGained;
         EventManager.OnClickAttemtUsed += UpdateAttempt;
 
         pauseButton.onClick.AddListener(OpenPauseMenu);
@@ -42,6 +48,7 @@ public class InGame : UIPanel
     {
         EventManager.OnComboUsed -= ComboUsed;
         EventManager.OnUpdateScore -= UpdateScore;
+        EventManager.OnAttemptGained -= AttemptGained;
         EventManager.OnClickAttemtUsed -= UpdateAttempt;
         
         pauseButton.onClick.RemoveAllListeners();
@@ -50,6 +57,8 @@ public class InGame : UIPanel
     public IEnumerator<float> SetupUI()
     {
         comboHint.SetActive(false);
+        gainAttemptHint.SetActive(false);
+
         UpdateScore(ScoreManager.Instance.Score);
         UpdateAttempt(InputControllerManager.Instance.InputAttempt);
 
@@ -96,7 +105,7 @@ public class InGame : UIPanel
         RectTransform rect = (RectTransform)comboHint.transform;
 
         comboCanvas.alpha = 0f;
-        rect.localScale = Vector3.one * 0.85f;
+        rect.localScale = Vector3.one * 0.5f;
 
         DOTween.Kill(comboCanvas);
         DOTween.Kill(rect);
@@ -107,8 +116,31 @@ public class InGame : UIPanel
         seq.AppendInterval(0.7f);
         seq.Append(comboCanvas.DOFade(0f, 0.25f));
         seq.OnComplete(() => comboHint.SetActive(false));
+    }
 
-        SoundManager.Instance.PlayComboSound(x);
+    private void AttemptGained(int amount)
+    {
+        if (gainAttemptHint == null || gainAttemptCanvas == null)
+            return;
+
+        gainAttemptHint.SetActive(true);
+
+        gainAttemptText.text = "+ " + amount.ToString();
+
+        RectTransform rect = (RectTransform)gainAttemptHint.transform;
+
+        gainAttemptCanvas.alpha = 0f;
+        rect.localScale = Vector3.one * 0.5f;
+
+        DOTween.Kill(gainAttemptCanvas);
+        DOTween.Kill(rect);
+
+        Sequence seq = DOTween.Sequence();
+        seq.Append(gainAttemptCanvas.DOFade(1f, 0.15f));
+        seq.Join(rect.DOScale(1f, 0.2f).SetEase(Ease.OutBack));
+        seq.AppendInterval(0.7f);
+        seq.Append(gainAttemptCanvas.DOFade(0f, 0.25f));
+        seq.OnComplete(() => gainAttemptHint.SetActive(false));
     }
 
     private void UpdateScore(int newScore) => scoreText.text = newScore.ToString();

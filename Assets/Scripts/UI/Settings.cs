@@ -1,7 +1,6 @@
 using TMPro;
 
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 public class Settings : UIPanel
@@ -65,6 +64,7 @@ public class Settings : UIPanel
 
     private void OnSfxVolumeChanged(float volume)
     {
+        EventManager.UIVolumeChanged(volume);
         sfxVolumeText.text = $"{(int)(volume * 100)}%";
         UserDataManager.Instance.Data.SfxVolume = volume;
     }

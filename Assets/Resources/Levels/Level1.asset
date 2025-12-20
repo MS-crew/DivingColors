@@ -30,12 +30,21 @@ MonoBehaviour:
   - rid: 7549432826314883080
   - rid: 7549432849451188224
   Objectives:
-  - Color: 0
+  - Icon: {fileID: 21300000, guid: 27e7d837f8b8c7e49a93efe16a4ef63a, type: 3}
+    Color: 0
     TargetAmount: 2
     SpawnChanceMultiplier: 0.33
-  - Color: 3
+  - Icon: {fileID: 21300000, guid: ec62c22b1b6d03b4db59c3f7e604770b, type: 3}
+    Color: 3
     TargetAmount: 3
     SpawnChanceMultiplier: 0.2
+  SpecialObjects:
+  - Prefab: {fileID: 1188868284662877459, guid: c4217f60b1131a846aa6d34d433843fa, type: 3}
+    SpawnChance: 0.1
+    MaxOnSameTime: 1
+  - Prefab: {fileID: 7676747556623328391, guid: 04cfdc23aea28c145a3ffbc754ee669a, type: 3}
+    SpawnChance: 0.12
+    MaxOnSameTime: 1
   references:
     version: 2
     RefIds:

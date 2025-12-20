@@ -35,7 +35,7 @@ public class PoolManager : MonoBehaviour
         Queue<GameObject> queue = new(size);
         for (int i = 0; i < size; i++)
         {
-            GameObject obj = Instantiate(prefab, transform);
+            GameObject obj = Instantiate(prefab, transform, true);
             obj.SetActive(false);
             queue.Enqueue(obj);
         }

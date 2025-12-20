@@ -121,6 +121,9 @@ MonoBehaviour:
   - {fileID: 393343905206125164, guid: a0acae489190c6146a46a97555ef4641, type: 3}
   - {fileID: 8313283961572415339, guid: ac5e2701db3c08b4192f59aac2149861, type: 3}
   - {fileID: 9013561268044535436, guid: 058aded0a205f174392d0a89bc774f63, type: 3}
+  - {fileID: 1188868284662877459, guid: c4217f60b1131a846aa6d34d433843fa, type: 3}
+  - {fileID: 5853698329245413002, guid: 835d156590163a94da2fffc47e9a930e, type: 3}
+  - {fileID: 7676747556623328391, guid: 04cfdc23aea28c145a3ffbc754ee669a, type: 3}
 --- !u!114 &8362128029363805331
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -135,7 +138,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playMenuMusicbyDDefault: 0
   defaultClickSound: {fileID: 0}
-  menuMusic: {fileID: 0}
+  menuMusic: {fileID: 8300000, guid: b9f3f25fe670799418c28259f5dc90a6, type: 3}
   themaMusicSource: {fileID: 8641174224735436970}
   globalAudioSource: {fileID: 4539285229967716629}
   comboAudioConfig: {fileID: 11400000, guid: 36455117f48c9c649bddcf2b476ab8b1, type: 2}

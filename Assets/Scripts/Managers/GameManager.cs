@@ -43,6 +43,10 @@ public class GameManager : MonoBehaviour
 
     public void CheckGame(Slide _, List<ColorObject> _2)
     {
+        if (GameEnded)
+            return;
+
+        Timing.CallDelayed(0.3f, () => {
         if (InputControllerManager.Instance.InputAttempt <= 0)
         {
             GameEnded = true;
@@ -59,7 +63,16 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        InputControllerManager.Instance.IsInputEnabled = true;
+        if (LevelManager.Instance != null && !LevelManager.Instance.HasAnyPlayableMove())
+        {
+            GameEnded = true;
+            InputControllerManager.Instance.IsInputEnabled = false;
+            Timing.CallDelayed(gameOverDelay, EventManager.GameEnded);
+            return;
+        }
+
+        InputControllerManager.Instance.IsInputEnabled = true; 
+        });   
     }
 
     private void GameFinished()

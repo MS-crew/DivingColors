@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Assets
+﻿namespace Assets
 {
     public static class PublicEnums
     {
@@ -18,7 +12,8 @@ namespace Assets
             Orange,
             Black,
             White,
-            Pink
+            Pink,
+            Bonus,
         }
 
         public enum ComboTier : int

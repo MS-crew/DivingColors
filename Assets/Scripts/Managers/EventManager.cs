@@ -15,6 +15,10 @@ public static class EventManager
     public static void GameFinished() => OnGameFinished?.Invoke();
 
 
+    public static event Action<Slide, List<ColorObject>> OnSlideUsing;
+    public static void SlideUsing(Slide slide, List<ColorObject> collectedObjects) => OnSlideUsing?.Invoke(slide, collectedObjects);
+
+
     public static event Action<Slide, List<ColorObject>> OnSlideUsed;
     public static void SlideUsed(Slide slide, List<ColorObject> collectedObjects) => OnSlideUsed?.Invoke(slide, collectedObjects);
 
@@ -25,6 +29,10 @@ public static class EventManager
 
     public static event Action<ColorObject> OnObjectiveExpired;
     public static void ObjectiveExpired(ColorObject objectiveObject) => OnObjectiveExpired?.Invoke(objectiveObject);
+
+
+    public static event Action<BombObject> OnBombExploded;
+    public static void BombExploded(BombObject bombObject) => OnBombExploded?.Invoke(bombObject);
 
 
     public static event Action<int> OnClickAttemtUsed;
@@ -65,6 +73,10 @@ public static class EventManager
 
     public static event Action<string, ComboTier, int> OnComboUsed;
     public static void ComboUsed(string comboName, ComboTier tier, int x) => OnComboUsed?.Invoke(comboName, tier, x);
+
+
+    public static event Action<int> OnAttemptGained;
+    public static void AttemptGained(int amount) => OnAttemptGained?.Invoke(amount);
 
     #endregion
 }

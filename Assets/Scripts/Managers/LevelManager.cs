@@ -14,7 +14,6 @@ public class LevelManager : MonoBehaviour
     public static LevelManager Instance { get; private set; }
     public LevelDataSO LevelData { get; private set; }
 
-
     public List<Slide> Slides { get; set; } = new();
     public ColorObject[,] ColorObjects { get; private set; }
 
@@ -22,6 +21,7 @@ public class LevelManager : MonoBehaviour
     public Dictionary<ColorType, float> ObjectiveChances { get; private set; } = new();
     public Dictionary<ColorType, int> CollectionObjectives { get; private set; } = new();
 
+    private readonly Dictionary<string, int> specialObjectCounts = new();
 
     [SerializeField] private float xPadding = 2f;
     [SerializeField] private float zPadding = 2f;
@@ -38,13 +38,7 @@ public class LevelManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(Instance.gameObject);
-            Instance = null;
-        }
-
-        Instance = this;
+        Instance = Instance.SetSingleton(this);
     }
 
     private void OnDestroy()
@@ -55,13 +49,15 @@ public class LevelManager : MonoBehaviour
 
     private void OnEnable()
     {
-        EventManager.OnSlideUsed += SlideUsed;
+        EventManager.OnSlideUsing += SlideUsed;
+        EventManager.OnBombExploded += BombExploded;
         EventManager.OnObjectiveExpired += ObjectiveExpired;
     }
 
     private void OnDisable()
     {
-        EventManager.OnSlideUsed -= SlideUsed;
+        EventManager.OnSlideUsing -= SlideUsed;
+        EventManager.OnBombExploded -= BombExploded;
         EventManager.OnObjectiveExpired -= ObjectiveExpired;
     }
 
@@ -75,13 +71,11 @@ public class LevelManager : MonoBehaviour
         foreach (ColorObject obj in localCollected)
         {
             ScoreManager.Instance.Score++;
-
             if (CollectionObjectives.ContainsKey(obj.ColorType))
                 ScoreManager.Instance.AddObjective(obj.ColorType);
         }
 
         HashSet<int> affectedColumns = new();
-
         int rows = LevelData.RowCount;
         int cols = LevelData.ColumnCount;
 
@@ -99,7 +93,8 @@ public class LevelManager : MonoBehaviour
                 }
             }
 
-            obj.DetachFromGrid();
+            UnregisterSpecialObject(obj);
+            obj.OnCollected();
         }
 
         foreach (int col in affectedColumns)
@@ -110,64 +105,370 @@ public class LevelManager : MonoBehaviour
         Timing.CallDelayed(3f, () =>
         {
             foreach (ColorObject obj in localCollected)
-            {
                 obj.ReturnToPool();
-            }
         });
 
-        check:
-        GameManager.Instance.CheckGame(null, null);
+    check:
+        EventManager.SlideUsed(null, null);
+    }
+
+    private void BombExploded(BombObject bomb)
+    {
+        Timing.CallDelayed(0.3f, () =>
+        {
+            if (bomb == null || !bomb.gameObject.activeInHierarchy) return;
+
+            int centerRow = bomb.RowIndex;
+            int centerCol = bomb.ColumnIndex;
+            int radius = bomb.ExplodeRadius;
+
+            int rows = LevelData.RowCount;
+            int cols = LevelData.ColumnCount;
+
+            if (centerRow < 0 || centerRow >= rows || centerCol < 0 || centerCol >= cols)
+            {
+                UnregisterSpecialObject(bomb);
+                bomb.ReturnToPool();
+                return;
+            }
+
+            ColorObject current = ColorObjects[centerRow, centerCol];
+            if (!ReferenceEquals(current, bomb))
+            {
+                UnregisterSpecialObject(bomb);
+                bomb.ReturnToPool();
+                return;
+            }
+
+            HashSet<int> affectedColumns = new();
+            int startRow = Mathf.Max(0, centerRow - radius);
+            int endRow = Mathf.Min(rows - 1, centerRow + radius);
+            int startCol = Mathf.Max(0, centerCol - radius);
+            int endCol = Mathf.Min(cols - 1, centerCol + radius);
+
+            for (int r = startRow; r <= endRow; r++)
+            {
+                for (int c = startCol; c <= endCol; c++)
+                {
+                    if (Mathf.Pow(r - centerRow, 2) + Mathf.Pow(c - centerCol, 2) <= radius * radius + 0.5f)
+                    {
+                        ColorObject target = ColorObjects[r, c];
+                        if (target != null)
+                        {
+                            ColorObjects[r, c] = null;
+
+                            UnregisterSpecialObject(target);
+
+                            target.DetachFromGrid();
+                            target.ReturnToPool();
+                            affectedColumns.Add(c);
+                        }
+                    }
+                }
+            }
+
+            if (CameraShakeController.Instance != null)
+                CameraShakeController.Instance.Shake(0.7f, 0.4f, true);
+
+            foreach (int col in affectedColumns)
+            {
+                RebuildColumn(col);
+            }
+        });
     }
 
     private void ObjectiveExpired(ColorObject expiredObject)
     {
         int row = expiredObject.RowIndex;
         int col = expiredObject.ColumnIndex;
-
         int rows = LevelData.RowCount;
         int cols = LevelData.ColumnCount;
 
         if (row < 0 || row >= rows || col < 0 || col >= cols)
         {
+            UnregisterSpecialObject(expiredObject);
             expiredObject.ReturnToPool();
             return;
         }
 
         ColorObject current = ColorObjects[row, col];
-
         if (!ReferenceEquals(current, expiredObject))
         {
+            UnregisterSpecialObject(expiredObject);
             expiredObject.ReturnToPool();
             return;
         }
 
         ColorObjects[row, col] = null;
+
+        UnregisterSpecialObject(expiredObject);
+
         FillEmptyCell(row, col);
         expiredObject.ReturnToPool();
-
-        //if (!GameManager.Instance.GameEnded)
-            //InputControllerManager.Instance.IsInputEnabled = true;
     }
 
     public void Initialize(LevelDataSO levelData)
     {
         LevelData = levelData;
-
         InputControllerManager.Instance.InputAttempt = levelData.ClickAttempts;
+
+        specialObjectCounts.Clear();
+        if (LevelData.SpecialObjects != null)
+        {
+            foreach (SpecialObject special in LevelData.SpecialObjects)
+            {
+                if (special.Prefab != null)
+                    specialObjectCounts[special.Prefab.name] = 0;
+            }
+        }
 
         SetupObjectives();
         BuildPrefabCache();
         BuildBaseSpawnWeights();
-
         SpawnSlides();
         GenerateInitialGrid();
+    }
+
+    private void FillEmptyCell(int row, int col)
+    {
+        if (ColorObjects[row, col] != null) return;
+
+        foreach (SpecialObject special in LevelData.SpecialObjects)
+        {
+            if (special.Prefab == null)
+                continue;
+
+            specialObjectCounts.TryGetValue(special.Prefab.name, out int currentCount);
+
+            if (currentCount >= special.MaxOnSameTime)
+                continue;
+
+            if (Random.value > special.SpawnChance)
+                continue;
+
+            GameObject specialObj = SpawnSpecialObject(special.Prefab, row, col);
+
+            if (specialObj != null)
+            {
+                specialObj.transform.localScale = Vector3.zero;
+                specialObj.transform.DOScale(1f, 0.3f).SetEase(Ease.OutBack);
+                return;
+            }
+        }
+
+        ColorType color = ChooseColor(false);
+        GameObject cube = SpawnCube(row, col, color);
+
+        if (cube == null) return;
+
+        cube.transform.localScale = Vector3.zero;
+        cube.transform.DOScale(1f, 0.3f).SetEase(Ease.OutBack);
+    }
+
+    private void UnregisterSpecialObject(ColorObject obj)
+    {
+        string cleanName = obj.gameObject.name.Replace("(Clone)", "");
+        if (specialObjectCounts.ContainsKey(cleanName))
+        {
+            specialObjectCounts[cleanName]--;
+
+            if (specialObjectCounts[cleanName] > 0)
+                specialObjectCounts[cleanName]--;
+        }
+    }
+
+    private GameObject SpawnSpecialObject(GameObject prefab, int row, int col)
+    {
+        Vector3 spawnPos = FindGridPosition(row, col);
+        GameObject obj = PoolManager.Instance.SpawnFromPool(prefab, spawnPos, prefab.transform.rotation);
+
+        if (!obj.TryGetComponent(out ColorObject colorObj))
+        {
+            obj.ReturnToPool();
+            return null;
+        }
+
+        colorObj.RowIndex = row;
+        colorObj.ColumnIndex = col;
+        ColorObjects[row, col] = colorObj;
+
+        string prefabName = prefab.name;
+        if (!specialObjectCounts.ContainsKey(prefabName))
+            specialObjectCounts[prefabName] = 0;
+
+        specialObjectCounts[prefabName]++;
+
+        return obj;
+    }
+
+    private void RebuildColumn(int currentCol)
+    {
+        int rowMax = LevelData.RowCount;
+        Queue<ColorObject> existing = new(rowMax);
+
+        for (int row = 0; row < rowMax; row++)
+        {
+            ColorObject colorobject = ColorObjects[row, currentCol];
+            if (colorobject == null)
+                continue;
+
+            existing.Enqueue(colorobject);
+            ColorObjects[row, currentCol] = null;
+        }
+
+        int existingCount = existing.Count;
+        Sequence colSlide = DOTween.Sequence();
+
+        for (int row = 0; row < existingCount; row++)
+        {
+            ColorObject cube = existing.Dequeue();
+
+            cube.RowIndex = row;
+            cube.ColumnIndex = currentCol;
+            ColorObjects[row, currentCol] = cube;
+
+            Vector3 targetPos = FindGridPosition(row, currentCol);
+
+            Vector3 currentPos = cube.transform.position;
+            cube.transform.position = new Vector3(targetPos.x, currentPos.y, currentPos.z);
+
+            colSlide.Join(cube.transform.DOMove(targetPos, 0.35f));
+        }
+
+        colSlide.Play();
+
+        for (int row = 0; row < rowMax; row++)
+        {
+            if (ColorObjects[row, currentCol] != null)
+                continue;
+
+            FillEmptyCell(row, currentCol);
+        }
+    }
+
+    private GameObject SpawnCube(int row, int col, ColorType color)
+    {
+        if (!prefabsByColor.ContainsKey(color))
+            return null;
+
+        if (ColorObjects[row, col] != null)
+            return null;
+
+        List<GameObject> list = prefabsByColor[color];
+        GameObject prefab = list.GetRandomValue();
+        GameObject cube = PoolManager.Instance.SpawnFromPool(prefab, FindGridPosition(row, col), prefab.transform.rotation);
+
+        if (!cube.TryGetComponent(out ColorObject colorObject))
+            return cube;
+
+        colorObject.RowIndex = row;
+        colorObject.ColumnIndex = col;
+        ColorObjects[row, col] = colorObject;
+
+        return cube;
+    }
+
+    private ColorType ChooseColor(bool forceObjective)
+    {
+        Dictionary<ColorType, float> defaultWeights = baseSpawnWeights;
+        IEnumerable<ColorType> pool = forceObjective && CollectionObjectives.Count > 0 ? CollectionObjectives.Keys : defaultWeights.Keys;
+
+        float total = 0f;
+        foreach (ColorType type in pool)
+            total += defaultWeights[type];
+
+        float running = 0f;
+        float roll = Random.Range(0f, total);
+        foreach (ColorType color in pool)
+        {
+            running += defaultWeights[color];
+            if (roll <= running)
+                return color;
+        }
+
+        foreach (ColorType color in pool)
+            return color;
+
+        return 0;
+    }
+
+    public bool HasAnyPlayableMove()
+    {
+        int rows = LevelData.RowCount;
+        int cols = LevelData.ColumnCount;
+
+        for (int c = 0; c < cols; c++)
+        {
+            for (int r = 0; r < rows; r++)
+            {
+                ColorObject obj = ColorObjects[r, c];
+                if (obj != null)
+                {
+                    if (obj.CanBeClicable)
+                        return true;
+
+                    break;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public void ReturnToPoolAll()
+    {
+        if (ColorObjects == null)
+            return;
+
+        int rows = LevelData.RowCount;
+        int cols = LevelData.ColumnCount;
+        for (int row = 0; row < rows; row++)
+        {
+            for (int col = 0; col < cols; col++)
+            {
+                if (ColorObjects[row, col] != null)
+                {
+                    ColorObjects[row, col].ReturnToPool();
+                    ColorObjects[row, col] = null;
+                }
+            }
+        }
+
+        ColorObjects = null;
+        specialObjectCounts.Clear();
+    }
+
+    public bool AreAllObjectivesCompleted()
+    {
+        foreach (KeyValuePair<ColorType, int> objective in CollectionObjectives)
+        {
+            int target = objective.Value;
+            ColorType type = objective.Key;
+            if (!ScoreManager.Instance.CollectedObjectives.TryGetValue(type, out int current))
+                return false;
+
+            if (current < target)
+                return false;
+        }
+
+
+        return true;
+    }
+
+    public Vector3 FindGridPosition(int row, int col)
+    {
+        int cols = LevelData.ColumnCount;
+        float half = (cols - 1) * 0.5f;
+        float x = (col - half) * xPadding;
+        float z = row * zPadding;
+
+        return startPoint.position + new Vector3(x, 0f, z);
     }
 
     private void SetupObjectives()
     {
         ObjectiveChances = new Dictionary<ColorType, float>();
         CollectionObjectives = new Dictionary<ColorType, int>();
-
         foreach (ObjectiveData obj in LevelData.Objectives)
         {
             CollectionObjectives[obj.Color] = obj.TargetAmount;
@@ -178,7 +479,6 @@ public class LevelManager : MonoBehaviour
     private void BuildPrefabCache()
     {
         prefabsByColor.Clear();
-
         foreach (GameObject prefab in LevelData.ColorObjectPrefabs)
         {
             if (prefab == null)
@@ -188,7 +488,6 @@ public class LevelManager : MonoBehaviour
                 continue;
 
             ColorType color = co.ColorType;
-
             if (!prefabsByColor.ContainsKey(color))
                 prefabsByColor[color] = new List<GameObject>();
 
@@ -199,22 +498,16 @@ public class LevelManager : MonoBehaviour
     private void BuildBaseSpawnWeights()
     {
         baseSpawnWeights.Clear();
-
         int largestTarget = CollectionObjectives.Count > 0 ? CollectionObjectives.Max(x => x.Value) : 0;
-
         foreach (KeyValuePair<ColorType, List<GameObject>> kvp in prefabsByColor)
         {
             ColorType color = kvp.Key;
             float weight = defaultBaseChance;
-
             bool isObj = CollectionObjectives.ContainsKey(color);
-
             if (isObj && largestTarget > 0)
             {
                 int target = CollectionObjectives[color];
-
                 float ratio = Mathf.Clamp((float)target / largestTarget, 0.1f, 1f);
-
                 weight = objectiveBaseChance * ratio;
                 weight *= Mathf.Clamp(ObjectiveChances[color], 0.1f, 3f);
                 weight = Mathf.Min(weight, defaultBaseChance * 0.9f);
@@ -229,20 +522,17 @@ public class LevelManager : MonoBehaviour
         if (startPoint == null)
             startPoint = GameObject.FindWithTag(colorObjectSpawnPointTag).transform;
 
+        bool ensured = false;
         int rows = LevelData.RowCount;
         int cols = LevelData.ColumnCount;
+        bool hasObjectives = CollectionObjectives.Count > 0;
 
         ColorObjects = new ColorObject[rows, cols];
-
-        bool hasObjectives = CollectionObjectives.Count > 0;
-        bool ensured = false;
 
         for (int col = 0; col < cols; col++)
         {
             bool forceObjective = hasObjectives && !ensured && (col == cols - 1);
-
             ColorType color = ChooseColor(forceObjective);
-
             if (hasObjectives && CollectionObjectives.ContainsKey(color))
                 ensured = true;
 
@@ -250,9 +540,7 @@ public class LevelManager : MonoBehaviour
         }
 
         for (int row = 1; row < rows; row++)
-        {
             GenerateRow(row);
-        }
     }
 
     private void GenerateRow(int row)
@@ -275,11 +563,10 @@ public class LevelManager : MonoBehaviour
 
         int count = LevelData.SlidesPrefabs.Count;
         float spacing = slideSpacing;
-
         float startX = slidesParent.position.x;
+
         float y = slidesParent.position.y;
         float z = slidesParent.position.z;
-
         float half = (count - 1) * 0.5f;
 
         for (int i = 0; i < count; i++)
@@ -289,215 +576,11 @@ public class LevelManager : MonoBehaviour
                 continue;
 
             float xOffset = (i - half) * spacing;
-
             Vector3 pos = new(startX + xOffset, y, z);
             GameObject slideGo = Instantiate(prefab, pos, Quaternion.identity, slidesParent);
 
             if (slideGo.TryGetComponent(out Slide slide))
                 SlideCache[slide.Color] = slide;
         }
-    }
-
-    /// <summary>
-    /// Columnu düzeltir boş yerleri kaydırır en son boş kalanları yeniden doldurur.
-    /// </summary>
-    /// <param name="currentCol">Düzenlenecek sütun.</param>
-    private void RebuildColumn(int currentCol)
-    {
-        int rowMax = LevelData.RowCount;
-        Queue<ColorObject> existing = new(rowMax);
-
-        for (int row = 0; row < rowMax; row++)// mevcutları sırayla topla
-        {
-            ColorObject colorobject = ColorObjects[row, currentCol];
-
-            if (colorobject == null)
-                continue;
-
-            existing.Enqueue(colorobject);
-            ColorObjects[row, currentCol] = null;
-        }
-
-        int existingCount = existing.Count;
-
-        Sequence colSlide = DOTween.Sequence();
-
-        for (int row = 0; row < existingCount; row++)// yukarıdan alta doğru sıkıştır
-        {
-            ColorObject cube = existing.Dequeue();
-
-            cube.RowIndex = row;
-            cube.ColumnIndex = currentCol;
-            ColorObjects[row, currentCol] = cube;
-
-            Vector3 targetPos = FindGridPosition(row, currentCol);
-            colSlide.Join(cube.transform.DOMove(targetPos, 0.35f));
-        }
-
-        colSlide.Play();
-
-        for (int row = 0; row < rowMax; row++)// boş slotları yeni spawn ile doldur
-        {
-            if (ColorObjects[row, currentCol] != null)
-                continue;
-
-            FillEmptyCell(row, currentCol);
-        }
-
-        //if (!GameManager.Instance.GameEnded)
-            //InputControllerManager.Instance.IsInputEnabled = true;
-    }
-
-    /// <summary>
-    /// Bir gride yeni colorobject spawn eder, eğer ki boşsa.
-    /// </summary>
-    /// <param name="row">Hedef grid satırı.</param>
-    /// <param name="col">Hedef grid sütünü.</param>
-    private void FillEmptyCell(int row, int col)
-    {
-        if (ColorObjects[row, col] != null)
-            return;
-
-        ColorType color = ChooseColor(false);
-        GameObject cube = SpawnCube(row, col, color);
-
-        if (cube == null)
-            return;
-
-        cube.transform.localScale = Vector3.zero;
-        cube.transform.DOScale(1f, 0.3f).SetEase(Ease.OutBack);
-    }
-
-    /// <summary>
-    /// Color obje spawn etme için yardımcı method.
-    /// </summary>
-    /// <param name="row">Hedef grid satırı.</param>
-    /// <param name="col">Hedef grid sütünü.</param>
-    /// <param name="color">Prefabın spawn olacağı renk tipi.</param>
-    /// <returns> spawn olan küpün <see cref="GameObject"/> ini döndürür.</returns>
-    private GameObject SpawnCube(int row, int col, ColorType color)
-    {
-        if (!prefabsByColor.ContainsKey(color))
-        {
-            Debug.LogWarning("Warning prefab for " + color + " cant find!");
-            return null;
-        }
-
-        if (ColorObjects[row, col] != null)
-        {
-            Debug.LogError("Spawn error: null olmayan satıra spawn denemesi.");
-            return null;
-        }
-
-        List<GameObject> list = prefabsByColor[color];
-        GameObject prefab = list.GetRandomValue();
-
-        GameObject cube = PoolManager.Instance.SpawnFromPool(prefab, FindGridPosition(row, col), Quaternion.identity);
-
-        if (!cube.TryGetComponent(out ColorObject colorObject))
-            return cube;
-
-        colorObject.RowIndex = row;
-        colorObject.ColumnIndex = col;
-        ColorObjects[row, col] = colorObject;
-
-        return cube;
-    }
-
-    /// <summary>
-    /// Renk seçme random spaw olacak rengi seçer şansa bağlı.
-    /// </summary>
-    /// <param name="forceObjective">Zorla hedef olacak bir renk seçilecek mi.</param>
-    /// <returns> seçilen renk tipi <see cref="ColorType"/> ni döndürür.</returns>
-    private ColorType ChooseColor(bool forceObjective)
-    {
-        Dictionary<ColorType, float> defaultWeights = baseSpawnWeights;
-        IEnumerable<ColorType> pool = forceObjective && CollectionObjectives.Count > 0? CollectionObjectives.Keys : defaultWeights.Keys;
-
-        float total = 0f;
-        foreach (ColorType type in pool)
-        {
-            total += defaultWeights[type];
-        }
-
-        float roll = Random.Range(0f, total);
-        float running = 0f;
-
-        foreach (ColorType col in pool)
-        {
-            running += defaultWeights[col];
-            if (roll <= running)
-                return col;
-        }
-
-        foreach (ColorType col in pool)
-            return col;
-
-        return 0;
-    }
-
-    /// <summary>
-    /// Normalde gridde kalanların hepsini poola atması lazım ama belirsiz bilmiyorum.
-    /// </summary>
-    public void ReturnToPoolAll()
-    {
-        if (ColorObjects == null)
-            return;
-
-        int rows = LevelData.RowCount;
-        int cols = LevelData.ColumnCount;
-
-        for (int row = 0; row < rows; row++)
-        {
-            for (int col = 0; col < cols; col++)
-            {
-                if (ColorObjects[row, col] != null)
-                {
-                    ColorObjects[row, col].ReturnToPool();
-                    ColorObjects[row, col] = null;
-                }
-            }
-        }
-
-        ColorObjects = null;
-    }
-
-    /// <summary>
-    /// Tüm hedefler bitti mi diye kontrol yapar.
-    /// </summary>
-    /// <returns>Eğer hepsi topllandıysa true döner; öbür türlü, false.</returns>
-    public bool AreAllObjectivesCompleted()
-    {
-        foreach (KeyValuePair<ColorType, int> objective in CollectionObjectives)
-        {
-            int target = objective.Value;
-            ColorType type = objective.Key;
-
-            int current;
-            if (!ScoreManager.Instance.CollectedObjectives.TryGetValue(type, out current))
-                return false;
-
-            if (current < target)
-                return false;
-        }
-
-        return true;
-    }
-
-    /// <summary>
-    /// Gridin pozisyonunu bulmak için yardımcı method.
-    /// </summary>
-    /// <param name="row">Hedef satır.</param>
-    /// <param name="col">Hedef sütün.</param>
-    /// <returns> seçilen gridin pozisyonunu <see cref="Vector3"/> olarak döndürür.</returns>
-    public Vector3 FindGridPosition(int row, int col)
-    {
-        int cols = LevelData.ColumnCount;
-        float half = (cols - 1) * 0.5f;
-
-        float x = (col - half) * xPadding;
-        float z = row * zPadding;
-
-        return startPoint.position + new Vector3(x, 0f, z);
     }
 }

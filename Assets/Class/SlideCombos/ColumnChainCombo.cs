@@ -1,7 +1,4 @@
-using System;
 using System.Collections.Generic;
-
-using Assets;
 
 using UnityEngine;
 
@@ -9,20 +6,21 @@ using static Assets.PublicEnums;
 
 public sealed class ColumnChainCombo : SlideCombo
 {
-    [SerializeField] private int minChainLength = 4;
-
-    private readonly Dictionary<int, int> columnCount = new();
     public override byte Priority { get; } = 128;
     public override string ComboName { get; } = "CHAIN COMBO";
     public override ComboTier ComboTier { get; } = ComboTier.Super;
     public override float CameraShakeIntensity { get; } = 0.25f;
     public override float CameraShakeDuration { get; } = 0.2f;
 
-    public override bool IsCanApply(LevelManager lm, List<ColorObject> selected)
+    [SerializeField] private int minChainLength = 4;
+
+    private readonly Dictionary<int, int> columnCount = new();
+
+    public override bool IsCanApply(LevelManager lm, List<ColorObject> selecteds)
     {
         columnCount.Clear();
 
-        foreach (ColorObject obj in selected)
+        foreach (ColorObject obj in selecteds)
         {
             int col = obj.ColumnIndex;
 

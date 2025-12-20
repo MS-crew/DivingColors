@@ -2,8 +2,6 @@ using System.Collections.Generic;
 
 using DG.Tweening;
 
-using MEC;
-
 using TMPro;
 
 using UnityEngine;
@@ -13,55 +11,56 @@ using static Assets.PublicEnums;
 [RequireComponent(typeof(Rigidbody))]
 public class ColorObject : MonoBehaviour
 {
-    private const int MinLifeTime = 2;
-    private const float HideAnimTime = 0.3f;
+    protected const int MinLifeTime = 2;
+    protected const float HideAnimTime = 0.3f;
 
-    [SerializeField] private TextMeshPro textMeshPro;
+    [SerializeField] protected TextMeshPro textMeshPro;
 
     [field: SerializeField] public int RowIndex { get; set; }
     [field: SerializeField] public int ColumnIndex { get; set; }
-    [field: SerializeField] public ColorType ColorType { get; private set; }
-    [field: SerializeField] public AudioClip Collectsound { get; private set; }
+    [field: SerializeField] public ColorType ColorType { get; protected set; }
+    [field: SerializeField] public AudioClip Collectsound { get; protected set; }
 
-    public Rigidbody Rb { get; private set; }
+    public Rigidbody Rb { get; protected set; }
 
-    public bool CanBeClicable 
+    public virtual bool CanBeClicable
     {
         get
         {
             LevelManager levelManager = LevelManager.Instance;
-            if (levelManager == null)
-                return false;
+            if (levelManager == null) return false;
 
             if (!levelManager.SlideCache.TryGetValue(ColorType, out Slide slide))
                 return false;
 
-            if (slide.IsLocked)
-                return false;
+            if (slide.IsLocked) return false;
 
             for (int row = RowIndex; row >= 0; row--)
             {
-                if (levelManager.ColorObjects[row, ColumnIndex].ColorType != ColorType)
+                if (!levelManager.ColorObjects[row, ColumnIndex].ColorType.EqualsColorType(ColorType))
                     return false;
             }
 
-            return true; 
+            return true;
         }
     }
 
-    private int lifeTime;
-    private Vector3 scaleChache;
-    private bool isObjective, isSubscribedToSlide;
+    protected int lifeTime;
+    protected Vector3 scaleChache;
+    protected bool isObjective;
+    protected bool isSubscribedToSlide;
 
-    private void Awake() 
-    { 
+    public virtual void Awake()
+    {
         Rb = GetComponent<Rigidbody>();
         scaleChache = transform.localScale;
     }
 
-    private void OnEnable()
+    public virtual void OnEnable()
     {
         ResetRigidbody();
+        transform.DOKill();
+        transform.localScale = scaleChache;
 
         LevelManager lvl = LevelManager.Instance;
         if (lvl == null)
@@ -75,29 +74,29 @@ public class ColorObject : MonoBehaviour
         if (!isObjective)
             return;
 
-        lifeTime = Random.Range(MinLifeTime, lvl.LevelData.RowCount - 1);
+        lifeTime = Random.Range(MinLifeTime, lvl.LevelData.RowCount);
         UpdateText();
 
         SubscribeSlideEvents();
     }
 
-    private void OnDisable()
+    public virtual void OnDisable()
     {
         ResetRigidbody();
         UnsubscribeSlideEvents();
+
+        transform.DOKill();
         transform.localScale = scaleChache;
     }
 
-    public void OnClicked() 
+    public virtual void OnClicked()
     {
-        StartCoroutine(LevelManager.Instance.SlideCache[ColorType].OnClicked());
+        if (LevelManager.Instance.SlideCache.ContainsKey(ColorType))
+            StartCoroutine(LevelManager.Instance.SlideCache[ColorType].OnClicked());
     }
 
-    private void SubscribeSlideEvents()
+    public virtual void SubscribeSlideEvents()
     {
-        if (!isObjective)
-            return;
-
         if (isSubscribedToSlide)
             return;
 
@@ -105,7 +104,7 @@ public class ColorObject : MonoBehaviour
         isSubscribedToSlide = true;
     }
 
-    private void UnsubscribeSlideEvents()
+    public virtual void UnsubscribeSlideEvents()
     {
         if (!isSubscribedToSlide)
             return;
@@ -113,7 +112,8 @@ public class ColorObject : MonoBehaviour
         EventManager.OnSlideUsed -= OnSlideUsed;
         isSubscribedToSlide = false;
     }
-    private void OnSlideUsed(Slide slide, List<ColorObject> collected)
+
+    public virtual void OnSlideUsed(Slide slide, List<ColorObject> collected)
     {
         if (collected != null && collected.Contains(this))
             return;
@@ -128,7 +128,7 @@ public class ColorObject : MonoBehaviour
             transform.DOScale(0f, HideAnimTime).SetEase(Ease.InBack).OnComplete(Expired);
     }
 
-    private void ResetRigidbody()
+    public void ResetRigidbody()
     {
         Rb.velocity = Rb.angularVelocity = Vector3.zero;
     }
@@ -140,10 +140,20 @@ public class ColorObject : MonoBehaviour
         ColumnIndex = -1;
     }
 
-    private void Expired()
+    public virtual void Expired()
     {
         EventManager.ObjectiveExpired(this);
     }
 
-    private void UpdateText() => textMeshPro.text = lifeTime.ToString();
+    public virtual void OnCollected() 
+    { 
+        SoundManager.Instance.PlayGlobalSound(Collectsound, false);
+        DetachFromGrid();
+    }
+
+    protected void UpdateText()
+    {
+        if (textMeshPro != null) 
+            textMeshPro.text = lifeTime.ToString();
+    }
 }

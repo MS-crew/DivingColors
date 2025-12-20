@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f2c5761b9105bb4595465a0981e8d74, type: 3}
+  m_Name: ColorIcons
+  m_EditorClassIdentifier: 
+  icons:
+  - Color: 0
+    Icon: {fileID: 21300000, guid: 27e7d837f8b8c7e49a93efe16a4ef63a, type: 3}
+  - Color: 1
+    Icon: {fileID: 21300000, guid: 1cb2e3582b55985468c1e5791b675740, type: 3}
+  - Color: 2
+    Icon: {fileID: 21300000, guid: 89f03f8663d2aa348ac8c2b044fdd5d0, type: 3}
+  - Color: 3
+    Icon: {fileID: 21300000, guid: ec62c22b1b6d03b4db59c3f7e604770b, type: 3}
+  - Color: 4
+    Icon: {fileID: 21300000, guid: cf2edd859d1850441bce20d815e12e96, type: 3}
+  - Color: 5
+    Icon: {fileID: 21300000, guid: 2d7c05cd6a60d2b439b6604cf285cdb1, type: 3}
+  - Color: 6
+    Icon: {fileID: 0}
+  - Color: 7
+    Icon: {fileID: 21300000, guid: 537f9b5ada6ef804c83c4aeb9067d954, type: 3}
+  - Color: 8
+    Icon: {fileID: 21300000, guid: be42845244263d34d913308ab545d775, type: 3}

@@ -1,5 +1,3 @@
-using MEC;
-
 using Unity.VisualScripting;
 
 using UnityEngine;
@@ -26,6 +24,10 @@ public class InputControllerManager : MonoBehaviour
 
     private void Awake() => Instance = Instance.SetSingleton(this);
 
+    private void OnEnable() => EventManager.OnAttemptGained += AttemptGained;
+
+    private void OnDisable() => EventManager.OnAttemptGained -= AttemptGained;
+
     private void Update()
     {
         if (!IsInputEnabled || !Input.GetMouseButtonDown(0))
@@ -40,8 +42,9 @@ public class InputControllerManager : MonoBehaviour
             if (!hit.transform.TryGetComponent(out ColorObject colorObject) || !colorObject.CanBeClicable)
                 return;
 
+            InputAttempt -= 1;
+            IsInputEnabled = false;
             colorObject.OnClicked();
-            InputAttempt--;
             return;
         }
 
@@ -50,9 +53,9 @@ public class InputControllerManager : MonoBehaviour
             if (!hit.transform.parent.TryGetComponent(out Slide slide) || slide.IsLocked)
                 return;
 
-            StartCoroutine(slide.OnClicked()); 
-            InputAttempt--;
-            return;
+            InputAttempt -= 1;
+            IsInputEnabled = false;
+            StartCoroutine(slide.OnClicked());
         }
     }
 
@@ -60,4 +63,6 @@ public class InputControllerManager : MonoBehaviour
     {
         IsInputEnabled = true;
     }
+
+    private void AttemptGained(int newAttempt) => InputAttempt += newAttempt;
 }

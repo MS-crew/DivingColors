@@ -38,6 +38,18 @@ public static class Extensions
 
         return list2[randomIndex];
     }
+
+    public static bool EqualsColorType(this ColorType color1, ColorType color2) 
+    {
+        if (color1 == ColorType.Bonus || color2 == ColorType.Bonus)
+            return true;
+
+        if (color1 == color2)
+            return true;
+
+        return false;
+    }
+
     public static T SetSceneSingleton<T>(this T instance, ref T staticInstance) where T : MonoBehaviour
     {
         if (staticInstance != null && staticInstance != instance)
