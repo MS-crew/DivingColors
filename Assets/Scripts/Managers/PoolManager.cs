@@ -44,7 +44,7 @@ public class PoolManager : MonoBehaviour
         prefabArray[id] = prefab;
     }
 
-    public GameObject SpawnFromPool(GameObject prefab, Vector3 position, Quaternion rotation)
+    public GameObject SpawnFromPool(GameObject prefab, Vector3 position = default, Quaternion rotation = default)
     {
         if (!prefab.TryGetComponent(out PooledObject pooledObject))
             throw new Exception("Prefab does not have a PooledObject component.");
@@ -52,7 +52,7 @@ public class PoolManager : MonoBehaviour
         return SpawnFromPool(pooledObject.poolID, position, rotation);
     }
 
-    public GameObject SpawnFromPool(byte poolID, Vector3 position, Quaternion rotation)
+    public GameObject SpawnFromPool(byte poolID, Vector3 position = default, Quaternion rotation = default)
     {
         Queue<GameObject> objectQueue = poolArray[poolID];
         if (objectQueue == null)

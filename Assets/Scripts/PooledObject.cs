@@ -1,3 +1,5 @@
+using DG.Tweening;
+
 using UnityEngine;
 
 public class PooledObject : MonoBehaviour
@@ -6,4 +8,9 @@ public class PooledObject : MonoBehaviour
     public byte poolID = 1;
 
     public byte poolSize = 10;
+
+    private void OnDisable()
+    {
+        transform.DOKill();
+    }
 }

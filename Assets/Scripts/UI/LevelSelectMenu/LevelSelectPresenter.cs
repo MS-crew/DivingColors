@@ -15,6 +15,8 @@ public class LevelSelectPresenter
     public void LoadLevels()
     {
         allLevels = Resources.LoadAll<LevelDataSO>(GameManager.levelsResourcePath).OrderBy(x => x.LevelId);
+        if (allLevels == null)
+            GameManager.Instance.GenerateLevel(1);
 
         view.DisplayLevels(allLevels);
     }

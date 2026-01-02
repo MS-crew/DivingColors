@@ -18,7 +18,7 @@ GameObject:
   - component: {fileID: 4144543721707012514}
   m_Layer: 3
   m_Name: ExtraLife
-  m_TagString: ColorObject
+  m_TagString: ExtraAttempt
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

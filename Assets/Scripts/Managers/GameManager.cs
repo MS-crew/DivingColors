@@ -11,6 +11,8 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
+    [SerializeField] private GenerationSettingsSO levelGenerationSettings;
+
     public bool GameEnded { get; private set; } = false;
 
     public const string menuSceneName = "Menu";
@@ -22,10 +24,7 @@ public class GameManager : MonoBehaviour
     private const float activeTimeScale = 1f;
     private const float stoppedTimeScale = 0f;
 
-    private void Awake()
-    {
-        Instance = Instance.SetSingleton(this);
-    }
+    private void Awake() => Instance = Instance.SetSingleton(this);
 
     private void OnEnable()
     {
@@ -87,6 +86,14 @@ public class GameManager : MonoBehaviour
         InputControllerManager.Instance.IsInputEnabled = false;
     }
 
+    public LevelDataSO GenerateLevel (uint levelIndex)
+    {
+        LevelDataSO generatedLevel = AutoLevelGenerator.GenerateLevel(levelIndex, levelGenerationSettings);
+        Debug.Log($"Generated Level {generatedLevel.LevelId} with {generatedLevel.RowCount} rows and {generatedLevel.ColumnCount} columns.");
+
+        return generatedLevel;
+    }
+
     public IEnumerator<float> StartLevel(LevelDataSO leveldata, bool useCleanScene)
     {
         GameEnded = false;
@@ -123,6 +130,7 @@ public class GameManager : MonoBehaviour
             return false;
 
         uint oldLevelId = LevelManager.Instance.LevelData.LevelId;
+        GenerateLevel(oldLevelId + 1);
         LevelDataSO[] allLevels = Resources.LoadAll<LevelDataSO>(levelsResourcePath).OrderBy(lvl => lvl.LevelId).ToArray();
 
         int index = Array.FindIndex(allLevels, lvl => lvl.LevelId == oldLevelId);

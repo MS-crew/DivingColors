@@ -8,6 +8,8 @@ TagManager:
   - ColorObject
   - SpawnPoint
   - SlidesParent
+  - Bomb
+  - ExtraAttempt
   layers:
   - Default
   - TransparentFX

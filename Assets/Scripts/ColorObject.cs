@@ -45,22 +45,23 @@ public class ColorObject : MonoBehaviour
         }
     }
 
+    private int spawnFrameCount;
     protected int lifeTime;
-    protected Vector3 scaleChache;
     protected bool isObjective;
     protected bool isSubscribedToSlide;
 
     public virtual void Awake()
     {
         Rb = GetComponent<Rigidbody>();
-        scaleChache = transform.localScale;
     }
 
     public virtual void OnEnable()
     {
+        transform.localScale = Vector3.one;
+        spawnFrameCount = Time.frameCount;
+
         ResetRigidbody();
         transform.DOKill();
-        transform.localScale = scaleChache;
 
         LevelManager lvl = LevelManager.Instance;
         if (lvl == null)
@@ -85,14 +86,15 @@ public class ColorObject : MonoBehaviour
         ResetRigidbody();
         UnsubscribeSlideEvents();
 
-        transform.DOKill();
-        transform.localScale = scaleChache;
+        transform.DOKill(); 
+        ColumnIndex = RowIndex = -1;
+        transform.localScale = Vector3.one;
     }
 
     public virtual void OnClicked()
     {
-        if (LevelManager.Instance.SlideCache.ContainsKey(ColorType))
-            StartCoroutine(LevelManager.Instance.SlideCache[ColorType].OnClicked());
+        if (LevelManager.Instance.SlideCache.TryGetValue(ColorType, out Slide slide))
+            StartCoroutine(slide.OnClicked());
     }
 
     public virtual void SubscribeSlideEvents()
@@ -118,6 +120,9 @@ public class ColorObject : MonoBehaviour
         if (collected != null && collected.Contains(this))
             return;
 
+        if (Time.frameCount == spawnFrameCount)
+            return;
+
         if (lifeTime <= 0)
             return;
 
@@ -130,24 +135,29 @@ public class ColorObject : MonoBehaviour
 
     public void ResetRigidbody()
     {
+        if (Rb == null)
+            return;
+
         Rb.velocity = Rb.angularVelocity = Vector3.zero;
     }
 
     public void DetachFromGrid()
     {
         UnsubscribeSlideEvents();
-        RowIndex = -1;
-        ColumnIndex = -1;
+        RowIndex = ColumnIndex = -1;
     }
 
     public virtual void Expired()
     {
         EventManager.ObjectiveExpired(this);
+        Debug.Log($"Objective expired: {ColorType} at ({RowIndex}, {ColumnIndex})");
     }
 
     public virtual void OnCollected() 
-    { 
-        SoundManager.Instance.PlayGlobalSound(Collectsound, false);
+    {
+        if (Collectsound != null && SoundManager.Instance != null)
+            SoundManager.Instance.PlayGlobalSound(Collectsound, false);
+
         DetachFromGrid();
     }
 

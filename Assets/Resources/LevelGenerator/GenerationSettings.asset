@@ -1,0 +1,306 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b3334dda2daac04289ced62c3280de8, type: 3}
+  m_Name: GenerationSettings
+  m_EditorClassIdentifier: 
+  MinRows: 4
+  MaxRows: 9
+  MinCols: 4
+  MaxCols: 8
+  GridSizeCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  MinColorCount: 3
+  MaxColorCount: 9
+  ColorCountCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.19509582
+      value: 0.06904745
+      inSlope: Infinity
+      outSlope: Infinity
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.32273626
+      value: 0.1810331
+      inSlope: -Infinity
+      outSlope: -Infinity
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.48871458
+      value: 0.27756703
+      inSlope: Infinity
+      outSlope: Infinity
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.60668457
+      value: 0.3262348
+      inSlope: Infinity
+      outSlope: Infinity
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.73529416
+      value: 0.43248478
+      inSlope: Infinity
+      outSlope: Infinity
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.8256868
+      value: 0.55756694
+      inSlope: Infinity
+      outSlope: Infinity
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.8897427
+      value: 0.6775221
+      inSlope: Infinity
+      outSlope: Infinity
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 1
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.9553609
+      value: 0.81814235
+      inSlope: 11.031269
+      outSlope: 11.031269
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  ObjectiveRatioCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.2
+      inSlope: 0.40000004
+      outSlope: 0.40000004
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0.6
+      inSlope: 0.40000004
+      outSlope: 0.40000004
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  TargetDensityCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0.35
+      inSlope: -0.031422798
+      outSlope: -0.031422798
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.5454316
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  MovesSafetyMarginCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 2.5
+      inSlope: -1.25
+      outSlope: -1.25
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 1.25
+      inSlope: -1.25
+      outSlope: -1.25
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  AllCombos:
+  - rid: 5666350810176946177
+  - rid: 5666350810176946179
+  - rid: 5666350810176946180
+  SlidesPrefabs:
+  - {fileID: 2882031806795744869, guid: 8e020b57fb3bee846a6961c26b264d7a, type: 3}
+  - {fileID: 1186398682404915887, guid: 9609aea9803440c43ba950a79322bf43, type: 3}
+  - {fileID: 1437075063638027626, guid: b0f8e0e0493748448867bcdddc443212, type: 3}
+  - {fileID: 8832587278384840281, guid: 79dc412f748a644479b4e5b87cfd81ec, type: 3}
+  - {fileID: 8582871305132764747, guid: 321a80ee9b0fb784f8f8466ff45dfa6a, type: 3}
+  - {fileID: 8862743803147607615, guid: 7f9aebc4a18fe6046897fe3c2410d290, type: 3}
+  - {fileID: 7549628478534837628, guid: e1a5ff89f04334a4bb1682b6b0696329, type: 3}
+  - {fileID: 3035724610886838024, guid: 774ffe21fd574a24f97d562a9174f32f, type: 3}
+  - {fileID: 2607421369275955895, guid: d07e5d704666ed745a0609fad5a572f0, type: 3}
+  ColorObjectPrefabs:
+  - {fileID: 9046275764497157516, guid: 0f733b08eca630b469bf9c22a9b6d044, type: 3}
+  - {fileID: 7966371818167625382, guid: 6caf43dac8621134ab2d23ae3d038477, type: 3}
+  - {fileID: 393343905206125164, guid: a0acae489190c6146a46a97555ef4641, type: 3}
+  - {fileID: 9013561268044535436, guid: 058aded0a205f174392d0a89bc774f63, type: 3}
+  - {fileID: 4652050492136440490, guid: 75fd3048d72833a4f9d2f51933c00f2d, type: 3}
+  - {fileID: 8031377790471972001, guid: f9602c70ed3042a4b8140289d4bc0758, type: 3}
+  - {fileID: 8313283961572415339, guid: ac5e2701db3c08b4192f59aac2149861, type: 3}
+  - {fileID: 2822826519322795432, guid: b1ebbe71235bb8441bb5759141fa15fb, type: 3}
+  - {fileID: 7776694813830996801, guid: d839a77a9b1b99348a9160cca927ddea, type: 3}
+  SpecialItemRules:
+  - Prefab: {fileID: 7676747556623328391, guid: 04cfdc23aea28c145a3ffbc754ee669a, type: 3}
+    UnlockLevel: 5
+    SpawnChanceCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0.0125
+        inSlope: 2
+        outSlope: 2
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    MaxCountDensity: 0.07
+    MinAbsoluteCount: 0
+  - Prefab: {fileID: 7676747556623328391, guid: 04cfdc23aea28c145a3ffbc754ee669a, type: 3}
+    UnlockLevel: 5
+    SpawnChanceCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0.0125
+        inSlope: 2
+        outSlope: 2
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    MaxCountDensity: 0.07
+    MinAbsoluteCount: 0
+  references:
+    version: 2
+    RefIds:
+    - rid: 5666350810176946177
+      type: {class: ColumnChainCombo, ns: , asm: Assembly-CSharp}
+      data:
+        minChainLength: 4
+    - rid: 5666350810176946179
+      type: {class: PerfectFrontCombo, ns: , asm: Assembly-CSharp}
+      data: 
+    - rid: 5666350810176946180
+      type: {class: FullColumnCombo, ns: Assets.Class.SlideCombos, asm: Assembly-CSharp}
+      data: 

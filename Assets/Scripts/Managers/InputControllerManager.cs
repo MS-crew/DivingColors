@@ -48,7 +48,7 @@ public class InputControllerManager : MonoBehaviour
             return;
         }
 
-        if (hit.transform.parent.CompareTag(slideTag))
+        if (hit.transform.parent != null && hit.transform.parent.CompareTag(slideTag))
         {
             if (!hit.transform.parent.TryGetComponent(out Slide slide) || slide.IsLocked)
                 return;

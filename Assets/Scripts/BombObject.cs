@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using DG.Tweening;
 
 using MEC;
 
@@ -6,9 +6,10 @@ using UnityEngine;
 
 public class BombObject : ColorObject
 {
-    [Header("Bomb Settings")]
     [SerializeField] private byte shatterPoolId = 11;
     [field: SerializeField] public int ExplodeRadius { get; private set; } = 2;
+    [field: SerializeField] public float ShakeDuration { get; private set; } = 0.4f;
+    [field: SerializeField] public float ShakeInsentity { get; private set; } = 0.7f;
 
     public override bool CanBeClicable => false;
 
@@ -17,9 +18,9 @@ public class BombObject : ColorObject
     public override void OnEnable()
     {
         ResetRigidbody();
-        transform.localScale = scaleChache;
-        hasExploded = false;
+        transform.DOKill();
 
+        hasExploded = false;
         isObjective = true;
 
         if (textMeshPro != null)
@@ -29,29 +30,13 @@ public class BombObject : ColorObject
         if (lvl == null) 
             return;
 
-        int maxRows = lvl.LevelData.RowCount;
-        lifeTime = Random.Range(MinLifeTime, maxRows);
+        lifeTime = Random.Range(MinLifeTime, lvl.LevelData.RowCount);
         UpdateText();
 
         SubscribeSlideEvents();
     }
 
     public override void OnClicked() { }
-
-    public override void OnSlideUsed(Slide slide, List<ColorObject> collected)
-    {
-        if (collected != null && collected.Contains(this))
-            return;
-
-        if (lifeTime <= 0 || hasExploded) 
-            return;
-
-        lifeTime--;
-        UpdateText();
-
-        if (lifeTime <= 0)
-            Explode();
-    }
 
     public override void Expired()
     {

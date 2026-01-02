@@ -11,6 +11,9 @@ public class UserDataManager : MonoBehaviour
 
     private string savePath;
     private const string saveFileName = "userdatasave.json";
+    private const string encryptionKey = "ElmaArmutPaça5Salam_Tesla3416";
+
+    [SerializeField] private bool useEncryption = true;
 
     private void Awake()
     {
@@ -26,14 +29,35 @@ public class UserDataManager : MonoBehaviour
         {
             try
             {
-                string json = File.ReadAllText(savePath);
+                string file = File.ReadAllText(savePath);
+                string json = string.Empty;
+
+                if (useEncryption)
+                {
+                    try
+                    {
+                        json = EncryptDecrypt(file);
+                    }
+                    catch
+                    {
+                        json = file;
+                    }
+                }
+                else
+                {
+                    json = file;
+                }
 
                 Data = JsonUtility.FromJson<PlayerData>(json);
-                Debug.Log("User Data Loaded Successfully.");
+                if (Data == null)
+                {
+                    Debug.LogWarning("Save Corrupted, Creating new.");
+                    CreateNewSave();
+                }
             }
             catch (Exception e)
             {
-                Debug.LogError($"Load Error Save Corrupted?: {e.Message}");
+                Debug.LogError($"Save Corrupted: {e.Message}");
                 CreateNewSave();
             }
         }
@@ -49,16 +73,26 @@ public class UserDataManager : MonoBehaviour
         try
         {
             string json = JsonUtility.ToJson(Data, true);
+            string content = useEncryption ? EncryptDecrypt(json) : json;
 
-            File.WriteAllText(savePath, json);
-            Debug.Log($"<color=green>Game Saved:</color> {savePath}");
-
-            // Example: GPGSManager.SaveToCloud(json);
+            File.WriteAllText(savePath, content);
+            Debug.Log($"Game Saved: {savePath}");
         }
         catch (Exception e)
         {
             Debug.LogError($"Save Error: {e.Message}");
         }
+    }
+
+    private string EncryptDecrypt(string data)
+    {
+        string modifiedData = "";
+        for (int i = 0; i < data.Length; i++)
+        {
+            modifiedData += (char)(data[i] ^ encryptionKey[i % encryptionKey.Length]);
+        }
+
+        return modifiedData;
     }
 
     private void CreateNewSave()
@@ -67,27 +101,11 @@ public class UserDataManager : MonoBehaviour
         SaveGame();
     }
 
-    public void DeleteSave()
-    {
-        if (File.Exists(savePath))
-        {
-            File.Delete(savePath);
-            Debug.Log("Save file deleted.");
-        }
-
-        CreateNewSave();
-    }
-
     private void OnApplicationPause(bool pauseStatus)
     {
         if (pauseStatus)
-        {
             SaveGame();
-        }
     }
 
-    private void OnApplicationQuit()
-    {
-        SaveGame();
-    }
+    private void OnApplicationQuit() => SaveGame();
 }

@@ -1,13 +1,14 @@
+using System;
 using System.Collections.Generic;
 
 using UnityEngine;
 
 using static Assets.PublicEnums;
 
-[CreateAssetMenu(fileName = "ColorIcon", menuName = "Color Icon")]
-public class ColorIcons : ScriptableObject
+[CreateAssetMenu(fileName = "ObjectiveIcon", menuName = "Configs/Objective Icons")]
+public class ObjectiveIcons : ScriptableObject
 {
-    [System.Serializable]
+    [Serializable]
     public struct ColorIconPair
     {
         public ColorType Color;

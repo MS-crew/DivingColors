@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "ComboAudioConfig",menuName = "Combo Audio Config")]
+[CreateAssetMenu(fileName = "ComboAudioConfig",menuName = "Configs/Combo Audio Config")]
 public class ComboAudioConfig : ScriptableObject
 {
     public List<ComboAudio> ComboAudios;
@@ -15,7 +15,7 @@ public class ComboAudioConfig : ScriptableObject
 
         foreach (ComboAudio comboAudio in ComboAudios)
         {
-            if (x >= comboAudio.MinX&& comboAudio.MinX > minX)
+            if (x >= comboAudio.MinX && comboAudio.MinX > minX)
             {
                 minX = comboAudio.MinX;
                 selected = comboAudio;

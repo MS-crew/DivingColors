@@ -8,7 +8,7 @@ public class ObjectiveItem : MonoBehaviour
     private ColorType colorType;
     [SerializeField] private Text countText;
     [SerializeField] private Image colorImage;
-    [SerializeField] private ColorIcons colorIcons;
+    [SerializeField] private ObjectiveIcons colorIcons;
 
     private void OnEnable() => EventManager.OnObjectiveUpdated += UpdateCount;
     private void OnDisable() => EventManager.OnObjectiveUpdated -= UpdateCount;
