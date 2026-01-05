@@ -149,8 +149,8 @@ public class ColorObject : MonoBehaviour
 
     public virtual void Expired()
     {
-        EventManager.ObjectiveExpired(this);
         Debug.Log($"Objective expired: {ColorType} at ({RowIndex}, {ColumnIndex})");
+        EventManager.ObjectiveExpired(this);
     }
 
     public virtual void OnCollected() 

@@ -84,8 +84,60 @@ public class LevelManager : MonoBehaviour
 
     private void OnOperationComplete()
     {
+        ValidateAndFixGrid();
+
         isGridBusy = false;
         ProcessNextOperation();
+    }
+
+    private void ValidateAndFixGrid()
+    {
+        if (ColorObjects == null) return;
+
+        int rows = LevelData.RowCount;
+        int cols = LevelData.ColumnCount;
+        bool fixedAny = false;
+
+        for (int c = 0; c < cols; c++)
+        {
+            for (int r = 0; r < rows; r++)
+            {
+                ColorObject obj = ColorObjects[r, c];
+
+                if (obj == null)
+                {
+                    Debug.LogWarning($"[GRID FIX] Boş Hücre Tespit Edildi: ({r}, {c}). Dolduruluyor...");
+                    Tween t = FillEmptyCell(r, c);
+                    if (t != null) t.Complete();
+                    fixedAny = true;
+                }
+                else if (obj.RowIndex == -1 || obj.ColumnIndex == -1)
+                {
+                    Debug.LogWarning($"[GRID FIX] Zombi Obje Tespit Edildi: ({r}, {c}). Grid'den temizleniyor ve yenisi spawn ediliyor.");
+
+                    if (obj.gameObject.activeInHierarchy)
+                        obj.ReturnToPool();
+
+                    ColorObjects[r, c] = null;
+
+                    Tween t = FillEmptyCell(r, c);
+                    if (t != null) t.Complete();
+
+                    fixedAny = true;
+                }
+                else if (obj.RowIndex != r || obj.ColumnIndex != c)
+                {
+                    Debug.LogError($"[GRID SYNC FIX] ({r}, {c}) hücresindeki objenin koordinatı ({obj.RowIndex}, {obj.ColumnIndex}) yanlıştı. Düzeltildi.");
+                    obj.RowIndex = r;
+                    obj.ColumnIndex = c;
+                }
+            }
+        }
+
+        if (fixedAny)
+        {
+            Debug.Log("<color=green>[GRID FIX] Grid onarıldı ve senkronize edildi.</color>");
+        }
     }
 
     private void QueueSlideOperation(Slide slide, List<ColorObject> collected)

@@ -28,9 +28,9 @@ public class GameFinished : UIPanel
     {
         SoundManager.Instance.PlayGlobalSound(sound);
 
-        bool isHighScore = ScoreManager.Instance.IsHighScore;
+        //bool isHighScore = ScoreManager.Instance.IsHighScore;
 
-        highScoreText.SetActive(isHighScore);
+        highScoreText.SetActive(false);
         scoreText.text = ScoreManager.Instance.Score.ToString();
     }
 

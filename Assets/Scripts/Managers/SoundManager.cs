@@ -109,7 +109,7 @@ public class SoundManager : MonoBehaviour
     {
         if (!isEnabled)
             StopMenuMusic();
-        else if (SceneManager.GetActiveScene().name == GameManager.menuSceneName)
+        else
             PlayMenuMusic();
     }
 

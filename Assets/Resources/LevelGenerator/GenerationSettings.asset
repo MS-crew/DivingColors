@@ -290,8 +290,8 @@ MonoBehaviour:
       m_RotationOrder: 4
     MaxCountDensity: 0.07
     MinAbsoluteCount: 0
-  - Prefab: {fileID: 7676747556623328391, guid: 04cfdc23aea28c145a3ffbc754ee669a, type: 3}
-    UnlockLevel: 5
+  - Prefab: {fileID: 1188868284662877459, guid: c4217f60b1131a846aa6d34d433843fa, type: 3}
+    UnlockLevel: 10
     SpawnChanceCurve:
       serializedVersion: 2
       m_Curve:

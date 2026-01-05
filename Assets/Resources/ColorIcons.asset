@@ -26,7 +26,7 @@ MonoBehaviour:
   - Color: 5
     Icon: {fileID: 21300000, guid: 2d7c05cd6a60d2b439b6604cf285cdb1, type: 3}
   - Color: 6
-    Icon: {fileID: 0}
+    Icon: {fileID: 21300000, guid: 0770121c9c67abf42baa1b721680394d, type: 3}
   - Color: 7
     Icon: {fileID: 21300000, guid: 537f9b5ada6ef804c83c4aeb9067d954, type: 3}
   - Color: 8
