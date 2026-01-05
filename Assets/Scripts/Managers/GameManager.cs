@@ -45,39 +45,42 @@ public class GameManager : MonoBehaviour
         if (GameEnded)
             return;
 
-        Timing.CallDelayed(0.3f, () => {
-        if (InputControllerManager.Instance.InputAttempt <= 0)
+        Timing.CallDelayed(0.3f, () =>
         {
-            GameEnded = true;
-            InputControllerManager.Instance.IsInputEnabled = false;
-            Timing.CallDelayed(gameOverDelay, EventManager.GameEnded);
-            return;
-        }
+            if (InputControllerManager.Instance.InputAttempt <= 0)
+            {
+                GameEnded = true;
+                InputControllerManager.Instance.IsInputEnabled = false;
+                Timing.CallDelayed(gameOverDelay, EventManager.GameEnded);
+                return;
+            }
 
-        if (LevelManager.Instance != null && LevelManager.Instance.AreAllObjectivesCompleted())
-        {
-            GameEnded = true;
-            InputControllerManager.Instance.IsInputEnabled = false;
-            Timing.CallDelayed(gameOverDelay, EventManager.GameFinished);
-            return;
-        }
+            if (LevelManager.Instance != null && LevelManager.Instance.AreAllObjectivesCompleted())
+            {
+                GameEnded = true;
+                InputControllerManager.Instance.IsInputEnabled = false;
+                Timing.CallDelayed(gameOverDelay, EventManager.GameFinished);
+                return;
+            }
 
-        if (LevelManager.Instance != null && !LevelManager.Instance.HasAnyPlayableMove())
-        {
-            GameEnded = true;
-            InputControllerManager.Instance.IsInputEnabled = false;
-            Timing.CallDelayed(gameOverDelay, EventManager.GameEnded);
-            return;
-        }
+            if (LevelManager.Instance != null && !LevelManager.Instance.HasAnyPlayableMove())
+            {
+                GameEnded = true;
+                InputControllerManager.Instance.IsInputEnabled = false;
+                Timing.CallDelayed(gameOverDelay, EventManager.GameEnded);
+                return;
+            }
 
-        InputControllerManager.Instance.IsInputEnabled = true; 
-        });   
+            InputControllerManager.Instance.IsInputEnabled = true;
+        });
     }
 
     private void GameFinished()
     {
         UIManager.Instance.ShowPanel<GameFinished>();
         InputControllerManager.Instance.IsInputEnabled = false;
+        UserDataManager.Instance.Data.CurrentLevel += 1;
+        UserDataManager.Instance.SaveGame();
     }
 
     private void GameOver()
@@ -86,15 +89,7 @@ public class GameManager : MonoBehaviour
         InputControllerManager.Instance.IsInputEnabled = false;
     }
 
-    public LevelDataSO GenerateLevel (uint levelIndex)
-    {
-        LevelDataSO generatedLevel = AutoLevelGenerator.GenerateLevel(levelIndex, levelGenerationSettings);
-        Debug.Log($"Generated Level {generatedLevel.LevelId} with {generatedLevel.RowCount} rows and {generatedLevel.ColumnCount} columns.");
-
-        return generatedLevel;
-    }
-
-    public IEnumerator<float> StartLevel(LevelDataSO leveldata, bool useCleanScene)
+    public IEnumerator<float> StartLevel(uint levelIndex, bool useCleanScene)
     {
         GameEnded = false;
         Time.timeScale = activeTimeScale;
@@ -102,9 +97,7 @@ public class GameManager : MonoBehaviour
 
         LevelManager oldLevel = LevelManager.Instance;
         if (oldLevel != null)
-        {
             oldLevel.ReturnToPoolAll();
-        }
 
         if (useCleanScene)
         {
@@ -116,7 +109,8 @@ public class GameManager : MonoBehaviour
 
         yield return Timing.WaitUntilTrue(() => SceneManager.GetActiveScene().name == levelSceneName && LevelManager.Instance != null);
 
-        LevelManager.Instance.Initialize(leveldata);
+        LevelDataSO generatedData = AutoLevelGenerator.GenerateLevel(levelIndex, levelGenerationSettings);
+        LevelManager.Instance.Initialize(generatedData);
 
         UIManager.Instance.ShowPanel<InGame>();
 
@@ -126,7 +120,7 @@ public class GameManager : MonoBehaviour
 
     public bool TryStartNextLevel()
     {
-        if (LevelManager.Instance == null || LevelManager.Instance.LevelData == null)
+        /*if (LevelManager.Instance == null || LevelManager.Instance.LevelData == null)
             return false;
 
         uint oldLevelId = LevelManager.Instance.LevelData.LevelId;
@@ -141,8 +135,14 @@ public class GameManager : MonoBehaviour
         LevelDataSO nextLevel = allLevels[index + 1];
         if (nextLevel == null)
             return false;
+        */
+        
+        if (UserDataManager.Instance == null)
+            return false;
 
-        Timing.RunCoroutine(StartLevel(nextLevel, true));
+        uint nextLevelIndex = UserDataManager.Instance.Data.CurrentLevel;
+
+        Timing.RunCoroutine(StartLevel(nextLevelIndex, true));
         return true;
     }
 
@@ -156,9 +156,7 @@ public class GameManager : MonoBehaviour
     {
         LevelManager lvl = LevelManager.Instance;
         if (lvl != null)
-        {
             lvl.ReturnToPoolAll();
-        }
 
         SceneManager.LoadScene(clearSceneName);
         yield return Timing.WaitForOneFrame;
@@ -177,9 +175,9 @@ public class GameManager : MonoBehaviour
             return;
 
         Time.timeScale = activeTimeScale;
-        LevelDataSO currentLevelData = LevelManager.Instance.LevelData;
+        uint currentLevelIndex = LevelManager.Instance.LevelData.LevelId;
 
-        Timing.RunCoroutine(StartLevel(currentLevelData, true));
+        Timing.RunCoroutine(StartLevel(currentLevelIndex, true));
     }
 
     public void PauseGame()

@@ -16,15 +16,15 @@ public static class AutoLevelGenerator
         levelData.name = $"Generated_Level_{levelIndex}";
 
         float progression = Mathf.Clamp01(levelIndex / 500f);
-
         float wave = Mathf.Sin(levelIndex * 0.3f) * 0.15f;
         float difficulty = Mathf.Clamp01(progression + wave);
-        float gridSizeRatio = settings.GridSizeCurve.Evaluate(difficulty);
 
+        float gridSizeRatio = settings.GridSizeCurve.Evaluate(difficulty);
         levelData.RowCount = Mathf.RoundToInt(Mathf.Lerp(settings.MinRows, settings.MaxRows, gridSizeRatio));
         levelData.ColumnCount = Mathf.RoundToInt(Mathf.Lerp(settings.MinCols, settings.MaxCols, gridSizeRatio));
 
         int totalGridCells = levelData.RowCount * levelData.ColumnCount;
+
         float colorRatio = settings.ColorCountCurve.Evaluate(difficulty);
         int totalColors = Mathf.RoundToInt(Mathf.Lerp(settings.MinColorCount, settings.MaxColorCount, colorRatio));
 
@@ -32,7 +32,6 @@ public static class AutoLevelGenerator
 
         float objRatio = settings.ObjectiveRatioCurve.Evaluate(difficulty);
         int objectiveCount = Mathf.RoundToInt(totalColors * objRatio);
-
         int maxPossibleObjectives = Mathf.Max(1, totalColors - 1);
         objectiveCount = Mathf.Clamp(objectiveCount, 1, maxPossibleObjectives);
 
@@ -62,7 +61,6 @@ public static class AutoLevelGenerator
             };
 
             float totalDensity = settings.TargetDensityCurve.Evaluate(difficulty);
-
             float variance = Random.Range(0.8f, 1.2f);
             float perObjectiveDensity = (totalDensity / objectiveCount) * variance;
 
@@ -74,14 +72,16 @@ public static class AutoLevelGenerator
             levelData.Objectives.Add(objData);
         }
 
+
         int totalTargetsToCollect = levelData.Objectives.Sum(x => x.TargetAmount);
-        float averageCollectPerSlide = Mathf.Lerp(3f, 5f, gridSizeRatio);
+        float averageCollectPerSlide = Mathf.Lerp(2.5f, 4f, gridSizeRatio);
         float estimatedMovesNeeded = totalTargetsToCollect / averageCollectPerSlide;
         float safetyMargin = settings.MovesSafetyMarginCurve.Evaluate(difficulty);
 
-        levelData.ClickAttempts = Mathf.Max(5, Mathf.RoundToInt(estimatedMovesNeeded * safetyMargin));
-        levelData.SpecialObjects = new List<SpecialObject>();
+        levelData.ClickAttempts = Mathf.Max(10, Mathf.RoundToInt((estimatedMovesNeeded * safetyMargin) + 8));
 
+
+        levelData.SpecialObjects = new List<SpecialObject>();
         if (settings.SpecialItemRules != null)
         {
             foreach (var rule in settings.SpecialItemRules)
@@ -94,10 +94,12 @@ public static class AutoLevelGenerator
 
                     if (chance > 0 && maxCount > 0)
                     {
-                        SpecialObject sp = new SpecialObject();
-                        sp.Prefab = rule.Prefab;
-                        sp.SpawnChance = chance;
-                        sp.MaxOnSameTime = maxCount;
+                        SpecialObject sp = new()
+                        {
+                            Prefab = rule.Prefab,
+                            SpawnChance = chance,
+                            MaxOnSameTime = maxCount
+                        };
 
                         levelData.SpecialObjects.Add(sp);
                     }

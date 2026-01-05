@@ -1,3 +1,5 @@
+using MEC;
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -23,7 +25,9 @@ public class Menu : UIPanel
 
     private void OnClickedQuit() => GameManager.Instance.Quit();
 
+    private void OnClickedLevelSelect() => GameManager.Instance.TryStartNextLevel();
+
     private void OnClickedSettings() => UIManager.Instance.NavigateTo<Settings>(UIManager.NavigationMode.Popup);
 
-    private void OnClickedLevelSelect() => UIManager.Instance.NavigateTo<LevelSelect>(UIManager.NavigationMode.Replace);
+    //eski level seçme private void OnClickedLevelSelect() => UIManager.Instance.NavigateTo<LevelSelect>(UIManager.NavigationMode.Replace);
 }

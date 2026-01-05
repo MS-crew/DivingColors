@@ -4,7 +4,7 @@ using System;
 public class PlayerData
 {
     public int TotalScore = 0;
-    public int CurrentLevel = 1;
+    public uint CurrentLevel = 1;
 
     public float SfxVolume = 1.0f;
     public float MusicVolume = 0.5f;
