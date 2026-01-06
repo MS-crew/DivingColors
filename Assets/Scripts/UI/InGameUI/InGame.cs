@@ -16,6 +16,8 @@ public class InGame : UIPanel
 {
     [SerializeField] private Text scoreText;
     [SerializeField] private Text attemptText;
+    [SerializeField] private TMP_Text levelIDText;
+
     [SerializeField] private Button pauseButton;
     [SerializeField] private Transform objectivesContainer;
     [SerializeField] private GameObject objectiveItemPrefab;
@@ -76,6 +78,8 @@ public class InGame : UIPanel
                 item.Setup(objective.Key, objective.Value);
             }
         }
+
+        levelIDText.text = $"LEVEL\n {LevelManager.Instance.LevelData.LevelId}";
     }
 
     private void OpenPauseMenu()
@@ -92,13 +96,7 @@ public class InGame : UIPanel
         comboHint.SetActive(true);
 
         comboHeader.text = comboName;
-        comboTier.text = tier switch
-        {
-            ComboTier.Super => "SUPER COMBO!!!",
-            ComboTier.Mega => "MEGA COMBO!!!",
-            ComboTier.Ultra => "ULTRA COMBO!!!",
-            _ => "COMBO"
-        };
+        comboTier.text = tier.GetComboTierToString();
 
         comboX.text = string.Concat(x,"X");
 
@@ -125,7 +123,7 @@ public class InGame : UIPanel
 
         gainAttemptHint.SetActive(true);
 
-        gainAttemptText.text = "+ " + amount.ToString();
+        gainAttemptText.text = "+" + amount.ToString();
 
         RectTransform rect = (RectTransform)gainAttemptHint.transform;
 

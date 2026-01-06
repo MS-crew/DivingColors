@@ -91,5 +91,16 @@ public static class Extensions
             _ => Color.white
         };
     }
+
+    public static string GetComboTierToString(this ComboTier tier)
+    {
+        return tier switch
+        {
+            ComboTier.Super => "SUPER COMBO!!!",
+            ComboTier.Mega => "MEGA COMBO!!!",
+            ComboTier.Ultra => "ULTRA COMBO!!!",
+            _ => "COMBO"
+        };
+    }
 }
 

@@ -33,3 +33,6 @@ MonoBehaviour:
     Variants:
     - {fileID: 8300000, guid: 0b491d528907d9a4d9c4cf3e1b496b24, type: 3}
     - {fileID: 8300000, guid: 1eeee135e23b78a4fa88f93bfe5c3fa4, type: 3}
+  - MinX: 0
+    Variants:
+    - {fileID: 8300000, guid: 83b5f1a7f139b7a4681f2b2473809935, type: 3}

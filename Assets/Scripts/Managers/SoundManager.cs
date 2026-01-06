@@ -12,7 +12,7 @@ public class SoundManager : MonoBehaviour
 {
     public static SoundManager Instance { get; private set; }
 
-    [SerializeField] private bool playMenuMusicbyDDefault;
+    [SerializeField] private bool playMenuMusicbyDefault;
     [SerializeField] private AudioClip defaultClickSound, menuMusic;
     [SerializeField] private AudioSource themaMusicSource, globalAudioSource;
 
@@ -46,12 +46,10 @@ public class SoundManager : MonoBehaviour
         EventManager.OnComboUsed += PlayComboSound;
         EventManager.OnAttemptGained += PlayAttempGainedSound;
 
-
         EventManager.OnUIVolumeChanged += SfxVolumeChanged;
         EventManager.OnMenuMusicToggled += MenuMusicToggled;
         EventManager.OnMusicVolumeChanged += MusicVolumeChanged;
         //EventManager.OnPressedUIElement += PlayClickSound;
-       
     }
 
     private void OnDisable()
@@ -61,12 +59,10 @@ public class SoundManager : MonoBehaviour
         EventManager.OnComboUsed -= PlayComboSound;
         EventManager.OnAttemptGained -= PlayAttempGainedSound;
 
-
         EventManager.OnUIVolumeChanged -= SfxVolumeChanged; 
         EventManager.OnMenuMusicToggled -= MenuMusicToggled;
         EventManager.OnMusicVolumeChanged -= MusicVolumeChanged;
         //EventManager.OnPressedUIElement -= PlayClickSound;
-        
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
