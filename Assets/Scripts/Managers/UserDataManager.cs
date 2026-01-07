@@ -54,6 +54,9 @@ public class UserDataManager : MonoBehaviour
                     Debug.LogWarning("Save Corrupted, Creating new.");
                     CreateNewSave();
                 }
+
+                /// test için levele atlama
+                //Data.CurrentLevel = 100;
             }
             catch (Exception e)
             {

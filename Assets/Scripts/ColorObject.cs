@@ -45,9 +45,9 @@ public class ColorObject : MonoBehaviour
         }
     }
 
-    private int spawnFrameCount;
     protected int lifeTime;
     protected bool isObjective;
+    protected int spawnFrameCount;
     protected bool isSubscribedToSlide;
 
     public virtual void Awake()
@@ -57,11 +57,11 @@ public class ColorObject : MonoBehaviour
 
     public virtual void OnEnable()
     {
-        transform.localScale = Vector3.one;
         spawnFrameCount = Time.frameCount;
 
         ResetRigidbody();
         transform.DOKill();
+        transform.localScale = Vector3.one;
 
         LevelManager lvl = LevelManager.Instance;
         if (lvl == null)
@@ -76,8 +76,8 @@ public class ColorObject : MonoBehaviour
             return;
 
         lifeTime = Random.Range(MinLifeTime, lvl.LevelData.RowCount);
-        UpdateText();
 
+        UpdateText();
         SubscribeSlideEvents();
     }
 

@@ -17,8 +17,11 @@ public class BombObject : ColorObject
 
     public override void OnEnable()
     {
+        spawnFrameCount = Time.frameCount;
+
         ResetRigidbody();
         transform.DOKill();
+        transform.localScale = Vector3.one;
 
         hasExploded = false;
         isObjective = true;
@@ -31,8 +34,8 @@ public class BombObject : ColorObject
             return;
 
         lifeTime = Random.Range(MinLifeTime, lvl.LevelData.RowCount);
-        UpdateText();
 
+        UpdateText();
         SubscribeSlideEvents();
     }
 

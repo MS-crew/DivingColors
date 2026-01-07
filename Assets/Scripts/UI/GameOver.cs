@@ -28,10 +28,6 @@ public class GameOver : UIPanel
     private void SetUI()
     {
         SoundManager.Instance.PlayGlobalSound(sound);
-
-        bool isHighScore = ScoreManager.Instance.IsHighScore;
-
-        highScoreText.SetActive(isHighScore);
         scoreText.text = ScoreManager.Instance.Score.ToString();
     }
 

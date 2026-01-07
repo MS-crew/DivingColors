@@ -47,19 +47,19 @@ public class GameManager : MonoBehaviour
 
         Timing.CallDelayed(0.3f, () =>
         {
-            if (InputControllerManager.Instance.InputAttempt <= 0)
-            {
-                GameEnded = true;
-                InputControllerManager.Instance.IsInputEnabled = false;
-                Timing.CallDelayed(gameOverDelay, EventManager.GameEnded);
-                return;
-            }
-
             if (LevelManager.Instance != null && LevelManager.Instance.AreAllObjectivesCompleted())
             {
                 GameEnded = true;
                 InputControllerManager.Instance.IsInputEnabled = false;
                 Timing.CallDelayed(gameOverDelay, EventManager.GameFinished);
+                return;
+            }
+
+            if (InputControllerManager.Instance.InputAttempt <= 0)
+            {
+                GameEnded = true;
+                InputControllerManager.Instance.IsInputEnabled = false;
+                Timing.CallDelayed(gameOverDelay, EventManager.GameEnded);
                 return;
             }
 

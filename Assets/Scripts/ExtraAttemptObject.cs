@@ -10,6 +10,8 @@ public class ExtraAttemptObject : ColorObject
 
     public override void OnEnable()
     {
+        spawnFrameCount = Time.frameCount;
+
         ResetRigidbody();
         transform.DOKill();
         transform.localScale = Vector3.one;
@@ -23,9 +25,9 @@ public class ExtraAttemptObject : ColorObject
         if (lvl == null)
             return;
 
-        lifeTime = Random.Range(MinLifeTime, lvl.LevelData.RowCount); 
-        UpdateText();
+        lifeTime = Random.Range(MinLifeTime, lvl.LevelData.RowCount + 1); 
 
+        UpdateText();
         SubscribeSlideEvents();
     }
 
