@@ -211,7 +211,6 @@ public class LevelManager : MonoBehaviour
                 obj.ReturnToPool();
 
             EventManager.SlideUsed(null, null);
-            GameManager.Instance.CheckGame(null, null);
 
             OnOperationComplete();
         });
