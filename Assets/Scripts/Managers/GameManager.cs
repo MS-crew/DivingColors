@@ -47,6 +47,9 @@ public class GameManager : MonoBehaviour
 
         Timing.CallDelayed(0.3f, () =>
         {
+            if (GameEnded) 
+                return;
+
             if (LevelManager.Instance != null && LevelManager.Instance.AreAllObjectivesCompleted())
             {
                 GameEnded = true;
