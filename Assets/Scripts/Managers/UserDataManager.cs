@@ -56,7 +56,7 @@ public class UserDataManager : MonoBehaviour
                 }
 
                 /// test için levele atlama
-                //Data.CurrentLevel = 100;
+                Data.CurrentLevel = 150;
             }
             catch (Exception e)
             {
